@@ -8,10 +8,10 @@ final pages = [
   new PageViewModel(fourthPage, "Deslize para a direita para curtir, deslize para a esquerda para rejeitar. Interaja através de um chat "),
 ];
 
-class Page extends StatelessWidget {
+class Pagee extends StatelessWidget {
   final PageViewModel viewModel;
 
-  Page({this.viewModel});
+  Pagee({this.viewModel});
 
   @override
   Widget build(BuildContext context) {

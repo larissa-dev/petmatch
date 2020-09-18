@@ -63,7 +63,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
               },
               controller: controller,
               itemCount: pages.length,
-              itemBuilder: (context, index) => new Page(
+              itemBuilder: (context, index) => new Pagee(
                     viewModel: pages[index],
                   ),
             ),
