@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:petmatch/Screens/Login/pages.dart';
 import 'package:petmatch/Screens/Login/styles.dart';
 import 'package:flutter/material.dart';
@@ -22,11 +24,24 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     controller = new PageController(initialPage: 0, keepPage: true);
   }
 
-  Future<Null> _login() async {
+  Future<void> _login() async {
     setState(() {
       loader = true;
     });
-    Navigator.of(context).pushNamed("/home");
+
+    GoogleSignIn _googleSignIn = GoogleSignIn(
+      scopes: [
+        'email',
+        'https://www.googleapis.com/auth/contacts.readonly',
+      ],
+    );
+
+    final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+    final storage = new FlutterSecureStorage();
+
+    await storage.write(key: 'currentUser', value: googleUser.toString());
+
+    Navigator.of(context).pushNamed('/home');
     setState(() {
       loader = false;
     });

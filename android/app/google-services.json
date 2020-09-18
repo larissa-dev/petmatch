@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "557182762612",
+    "firebase_url": "https://projetos-firebase.firebaseio.com",
+    "project_id": "projetos-firebase",
+    "storage_bucket": "projetos-firebase.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:557182762612:android:924e2555e096f9fcf19b21",
+        "android_client_info": {
+          "package_name": "com.example.netflix_clone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "557182762612-oibk3n5kd9p2ustua4kfjrrdao2buqe0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqiGFtzjOLrKlGKxEZn8W5tpQtT6HF6-E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "557182762612-2ne8nf25tap1qmmlumcvua79tneekp4b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:557182762612:android:de5299891d09705df19b21",
+        "android_client_info": {
+          "package_name": "com.example.petmatch"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "557182762612-oibk3n5kd9p2ustua4kfjrrdao2buqe0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqiGFtzjOLrKlGKxEZn8W5tpQtT6HF6-E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "557182762612-2ne8nf25tap1qmmlumcvua79tneekp4b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:557182762612:android:9210b481d49fc758f19b21",
+        "android_client_info": {
+          "package_name": "com.vgl"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "557182762612-oibk3n5kd9p2ustua4kfjrrdao2buqe0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqiGFtzjOLrKlGKxEZn8W5tpQtT6HF6-E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "557182762612-2ne8nf25tap1qmmlumcvua79tneekp4b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
