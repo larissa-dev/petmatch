@@ -1,4 +1,6 @@
-import 'package:petmatch/Screens/Account/styles.dart';
+import 'dart:convert';
+
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:petmatch/theme/styles.dart';
 import 'package:flutter/material.dart';
 
@@ -9,8 +11,18 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   TabController controller;
+  Map user;
+  final storage = new FlutterSecureStorage();
 
   void initState() {
+    storage.read(key: 'currentUser').then((value) {
+      setState(() {
+        user = jsonDecode(value);
+        print(user);
+      });
+    });
+
+
     super.initState();
   }
 
@@ -44,12 +56,16 @@ class _ProfileState extends State<Profile> {
               height: 80.0,
               width: 80.0,
               decoration:
-                  new BoxDecoration(shape: BoxShape.circle, image: logo),
+                new BoxDecoration(shape: BoxShape.circle, image: DecorationImage(
+                  image: new NetworkImage(user['photoUrl']),
+                  fit: BoxFit.cover,
+                )
+              ),
             ),
             new Padding(
               padding: const EdgeInsets.all(12.0),
               child: new Text(
-                "Nome do dono do perfil",
+                user['displayName'],
                 style: new TextStyle(
                     fontFamily: "PoppinsMedium",
                     fontSize: 20.0,

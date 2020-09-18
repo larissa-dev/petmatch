@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -39,7 +40,12 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
     final storage = new FlutterSecureStorage();
 
-    await storage.write(key: 'currentUser', value: googleUser.toString());
+    await storage.write(key: 'currentUser', value: jsonEncode({
+      'id': googleUser.id,
+      'displayName': googleUser.displayName,
+      'email': googleUser.email,
+      'photoUrl': googleUser.photoUrl,
+    }));
 
     Navigator.of(context).pushNamed('/home');
     setState(() {
