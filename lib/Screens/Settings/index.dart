@@ -1,8 +1,12 @@
+import 'dart:convert';
+
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:petmatch/theme/styles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:share/share.dart';
+import 'package:http/http.dart' as http;
 
 class Settings extends StatefulWidget {
   @override
@@ -25,8 +29,10 @@ class _SettingsState extends State<Settings> {
   double ageRangeRight = 0.0;
   RangeValues _values = RangeValues(18, 30);
 
+  Future settingsData;
   @override
   void initState() {
+    settingsData = _getSettings();
     super.initState();
   }
 
@@ -55,463 +61,549 @@ class _SettingsState extends State<Settings> {
               child: new Image(
                   image: new ExactAssetImage("assets/back-arrow.png"))),
           automaticallyImplyLeading: true,
-        ),
-        body: new SingleChildScrollView(
-          padding: new EdgeInsets.all(10.0),
-          child: new Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              new Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: new Text(
-                  "Configurações de Buscas (Descobertas)",
+          actions: [
+            FlatButton(
+                onPressed: () {
+                  _saveSettings();
+                },
+                child: Text(
+                  'Salvar',
                   style: new TextStyle(
                       fontSize: 20.0, fontFamily: "PoppinsRegular"),
-                ),
-              ),
-              new Card(
-                  elevation: 3.0,
-                  child: new Container(
-                    width: screenSize.width,
-                    padding: new EdgeInsets.only(top: 12.0, bottom: 12.0),
-                    child: new ListTile(
-                      title: new Text("Ativar Descoberta"),
-                      trailing: defaultTargetPlatform == TargetPlatform.android
-                          ? new Switch(
-                              value: discoverablity,
-                              onChanged: (bool newValue) {
-                                setState(() {
-                                  discoverablity = newValue;
-                                });
-                              },
-                              activeColor: gradientOne,
-                              activeTrackColor: gradientOne,
-                            )
-                          : new CupertinoSwitch(
-                              value: discoverablity,
-                              onChanged: (bool newValue) {
-                                setState(() {
-                                  discoverablity = newValue;
-                                });
-                              },
-                              activeColor: gradientOne,
-                            ),
+                ))
+          ],
+        ),
+        body: FutureBuilder(
+          future: settingsData,
+          builder: (_context, _snapshot) {
+            if (_snapshot.hasData) {
+              return new SingleChildScrollView(
+                padding: new EdgeInsets.all(10.0),
+                child: new Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    new Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: new Text(
+                        "Configurações de Buscas (Descobertas)",
+                        style: new TextStyle(
+                            fontSize: 20.0, fontFamily: "PoppinsRegular"),
+                      ),
                     ),
-                  )),
-              new Card(
-                  elevation: 3.0,
-                  child: new Container(
-                    width: screenSize.width,
-                    padding: new EdgeInsets.only(top: 12.0, bottom: 12.0),
-                    child: new Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                       /* new Padding(
+                    new Card(
+                        elevation: 3.0,
+                        child: new Container(
+                          width: screenSize.width,
+                          padding: new EdgeInsets.only(top: 12.0, bottom: 12.0),
+                          child: new ListTile(
+                            title: new Text("Ativar Descoberta"),
+                            trailing:
+                                defaultTargetPlatform == TargetPlatform.android
+                                    ? new Switch(
+                                        value: discoverablity,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            discoverablity = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                        activeTrackColor: gradientOne,
+                                      )
+                                    : new CupertinoSwitch(
+                                        value: discoverablity,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            discoverablity = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                      ),
+                          ),
+                        )),
+                    new Card(
+                        elevation: 3.0,
+                        child: new Container(
+                          width: screenSize.width,
+                          padding: new EdgeInsets.only(top: 12.0, bottom: 12.0),
+                          child: new Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              /* new Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: new Text("Mostre-me"),
                         ),*/
-                        
-                        new ListTile(
-                          title: new Text("Mostre-me"),
-                          //trailing: new Text(_values.start.round().toString() +
-                            //  " - " +
-                              //_values.end.round().toString()),
-                        ),
 
-
-
-                        new ListTile(
-                          title: new Text("Animais para Adoção"),
-                          trailing:
-                              defaultTargetPlatform == TargetPlatform.android
-                                  ? new Switch(
-                                      value: adocao,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          adocao = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                      activeTrackColor: gradientOne,
-                                    )
-                                  : new CupertinoSwitch(
-                                      value: adocao,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          adocao = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                    ),
-                        ),
-                        new ListTile(
-                          title: new Text("Animais Desaparecidos"),
-                          trailing:
-                              defaultTargetPlatform == TargetPlatform.android
-                                  ? new Switch(
-                                      value: desaparecidos,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          desaparecidos = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                      activeTrackColor: gradientOne,
-                                    )
-                                  : new CupertinoSwitch(
-                                      value: desaparecidos,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          desaparecidos = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                    ),
-                        ),
-
-                      new ListTile(
-                          title: new Text("Animais para cruzamento"),
-                          trailing:
-                              defaultTargetPlatform == TargetPlatform.android
-                                  ? new Switch(
-                                      value: cruzamento,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          cruzamento = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                      activeTrackColor: gradientOne,
-                                    )
-                                  : new CupertinoSwitch(
-                                      value: cruzamento,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          cruzamento = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                    ),
-                        ),
-                      ],
-                    ),
-                  )),
-              new Card(
-                  elevation: 3.0,
-                  child: new Container(
-                    width: screenSize.width,
-                    padding: new EdgeInsets.only(top: 12.0, bottom: 12.0),
-                    child: new Column(
-                      children: <Widget>[
-                        new ListTile(
-                          title: new Text("Distancia da Busca"),
-                          trailing:
-                              new Text(distance.round().toString() + "km."),
-                        ),
-                        new ListTile(
-                          title: new Slider(
-                            activeColor: gradientOne,
-                            inactiveColor: Colors.grey,
-                            max: 100.0,
-                            min: 0.0,
-                            value: distance,
-                            onChanged: (double newValue) {
-                              setState(() {
-                                distance = newValue;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  )),
-              new Card(
-                  elevation: 3.0,
-                  child: new Container(
-                    width: screenSize.width,
-                    padding: new EdgeInsets.only(top: 12.0, bottom: 12.0),
-                    child: new Column(
-                      children: <Widget>[
-                        new ListTile(
-                          title: new Text("Categorias de Animais"),
-                        ),
-
-                        new ListTile(
-                          title: new Text("Cães"),
-                          trailing:
-                              defaultTargetPlatform == TargetPlatform.android
-                                  ? new Switch(
-                                      value: cachorro,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          cachorro = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                      activeTrackColor: gradientOne,
-                                    )
-                                  : new CupertinoSwitch(
-                                      value: cachorro,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          cachorro = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                    ),
-                        ),
-
-                        new ListTile(
-                          title: new Text("Gatos"),
-                          trailing:
-                              defaultTargetPlatform == TargetPlatform.android
-                                  ? new Switch(
-                                      value: gato,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          gato = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                      activeTrackColor: gradientOne,
-                                    )
-                                  : new CupertinoSwitch(
-                                      value: gato,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          gato = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                    ),
-                        ),
-                        
-                        new ListTile(
-                          title: new Text("Pássaros"),
-                          trailing:
-                              defaultTargetPlatform == TargetPlatform.android
-                                  ? new Switch(
-                                      value: passaros,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          passaros = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                      activeTrackColor: gradientOne,
-                                    )
-                                  : new CupertinoSwitch(
-                                      value: passaros,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          passaros = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                    ),
-                        ),
-
-                        
-                        new ListTile(
-                          title: new Text("Roedores"),
-                          trailing:
-                              defaultTargetPlatform == TargetPlatform.android
-                                  ? new Switch(
-                                      value: roedores,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          roedores = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                      activeTrackColor: gradientOne,
-                                    )
-                                  : new CupertinoSwitch(
-                                      value: roedores,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          roedores = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                    ),
-                        ),
-
-
-
-                      ],
-                    ),
-                  )),
-              new Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: new Text(
-                  "Configurações do Aplicativo",
-                  style: new TextStyle(
-                      fontSize: 20.0, fontFamily: "PoppinsRegular"),
-                ),
-              ),
-              new Card(
-                  elevation: 3.0,
-                  child: new Container(
-                    width: screenSize.width,
-                    padding: new EdgeInsets.only(top: 12.0, bottom: 12.0),
-                    child: new Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        new ListTile(
-                          title: new Text("Notificações"),
-                        ),
-                        new ListTile(
-                          title: new Text("Combinações"),
-                          trailing:
-                              defaultTargetPlatform == TargetPlatform.android
-                                  ? new Switch(
-                                      value: matches,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          matches = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                      activeTrackColor: gradientOne,
-                                    )
-                                  : new CupertinoSwitch(
-                                      value: matches,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          matches = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                    ),
-                        ),
-                        new ListTile(
-                          title: new Text("Mensagens"),
-                          trailing:
-                              defaultTargetPlatform == TargetPlatform.android
-                                  ? new Switch(
-                                      value: messages,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          messages = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                      activeTrackColor: gradientOne,
-                                    )
-                                  : new CupertinoSwitch(
-                                      value: messages,
-                                      onChanged: (bool newValue) {
-                                        setState(() {
-                                          messages = newValue;
-                                        });
-                                      },
-                                      activeColor: gradientOne,
-                                    ),
-                        ),
-                      ],
-                    ),
-                  )),
-              new Container(
-                width: screenSize.width,
-                margin: new EdgeInsets.only(top: 30.0),
-                padding: new EdgeInsets.all(10.0),
-                child: new Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    new Container(
-                      width: 50.0,
-                      height: 50.0,
-                      alignment: Alignment.center,
-                      decoration: new BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: new LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [gradientOne, gradientTwo, gradientThree],
-                          tileMode: TileMode.repeated,
-                        ),
-                      ),
-                      child: new IconButton(
-                          icon: new Icon(
-                            Icons.share,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
-                            final RenderBox box = context.findRenderObject();
-                            Share.share("text",
-                                sharePositionOrigin:
-                                    box.localToGlobal(Offset.zero) & box.size);
-                          }),
-                    ),
-                    new Text("Version: 0.1"),
-                    new FlatButton(
-                      onPressed: () {
-                        // Navigator.of(context).pushNamedAndRemoveUntil(
-                        //     "/login", ModalRoute.withName('/login'));
-                        Navigator.of(context)
-                            .popUntil(ModalRoute.withName('/login'));
-                      },
-                      child: new Container(
-                          width: 250.0,
-                          height: 50.0,
-                          margin: new EdgeInsets.only(top: 40.0),
-                          alignment: Alignment.center,
-                          padding: new EdgeInsets.all(10.0),
-                          decoration: new BoxDecoration(
-                              gradient: new LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  gradientOne,
-                                  gradientTwo,
-                                  gradientThree
-                                ],
-                                tileMode: TileMode.repeated,
+                              new ListTile(
+                                title: new Text("Mostre-me"),
+                                //trailing: new Text(_values.start.round().toString() +
+                                //  " - " +
+                                //_values.end.round().toString()),
                               ),
-                              borderRadius: new BorderRadius.all(
-                                  new Radius.circular(50.0))),
-                          child: new Text(
-                            "LOGOUT",
-                            style: new TextStyle(
-                                fontSize: 18.0,
-                                letterSpacing: 0.6,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w400),
-                          )),
+                              new ListTile(
+                                title: new Text("Animais para Adoção"),
+                                trailing: defaultTargetPlatform ==
+                                        TargetPlatform.android
+                                    ? new Switch(
+                                        value: adocao,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            adocao = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                        activeTrackColor: gradientOne,
+                                      )
+                                    : new CupertinoSwitch(
+                                        value: adocao,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            adocao = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                      ),
+                              ),
+                              new ListTile(
+                                title: new Text("Animais Desaparecidos"),
+                                trailing: defaultTargetPlatform ==
+                                        TargetPlatform.android
+                                    ? new Switch(
+                                        value: desaparecidos,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            desaparecidos = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                        activeTrackColor: gradientOne,
+                                      )
+                                    : new CupertinoSwitch(
+                                        value: desaparecidos,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            desaparecidos = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                      ),
+                              ),
+                              new ListTile(
+                                title: new Text("Animais para cruzamento"),
+                                trailing: defaultTargetPlatform ==
+                                        TargetPlatform.android
+                                    ? new Switch(
+                                        value: cruzamento,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            cruzamento = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                        activeTrackColor: gradientOne,
+                                      )
+                                    : new CupertinoSwitch(
+                                        value: cruzamento,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            cruzamento = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                      ),
+                              ),
+                            ],
+                          ),
+                        )),
+                    new Card(
+                        elevation: 3.0,
+                        child: new Container(
+                          width: screenSize.width,
+                          padding: new EdgeInsets.only(top: 12.0, bottom: 12.0),
+                          child: new Column(
+                            children: <Widget>[
+                              new ListTile(
+                                title: new Text("Distancia da Busca"),
+                                trailing: new Text(
+                                    distance.round().toString() + "km."),
+                              ),
+                              new ListTile(
+                                title: new Slider(
+                                  activeColor: gradientOne,
+                                  inactiveColor: Colors.grey,
+                                  max: 100.0,
+                                  min: 0.0,
+                                  value: distance,
+                                  onChanged: (double newValue) {
+                                    setState(() {
+                                      distance = newValue;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        )),
+                    new Card(
+                        elevation: 3.0,
+                        child: new Container(
+                          width: screenSize.width,
+                          padding: new EdgeInsets.only(top: 12.0, bottom: 12.0),
+                          child: new Column(
+                            children: <Widget>[
+                              new ListTile(
+                                title: new Text("Categorias de Animais"),
+                              ),
+                              new ListTile(
+                                title: new Text("Cães"),
+                                trailing: defaultTargetPlatform ==
+                                        TargetPlatform.android
+                                    ? new Switch(
+                                        value: cachorro,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            cachorro = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                        activeTrackColor: gradientOne,
+                                      )
+                                    : new CupertinoSwitch(
+                                        value: cachorro,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            cachorro = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                      ),
+                              ),
+                              new ListTile(
+                                title: new Text("Gatos"),
+                                trailing: defaultTargetPlatform ==
+                                        TargetPlatform.android
+                                    ? new Switch(
+                                        value: gato,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            gato = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                        activeTrackColor: gradientOne,
+                                      )
+                                    : new CupertinoSwitch(
+                                        value: gato,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            gato = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                      ),
+                              ),
+                              new ListTile(
+                                title: new Text("Pássaros"),
+                                trailing: defaultTargetPlatform ==
+                                        TargetPlatform.android
+                                    ? new Switch(
+                                        value: passaros,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            passaros = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                        activeTrackColor: gradientOne,
+                                      )
+                                    : new CupertinoSwitch(
+                                        value: passaros,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            passaros = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                      ),
+                              ),
+                              new ListTile(
+                                title: new Text("Roedores"),
+                                trailing: defaultTargetPlatform ==
+                                        TargetPlatform.android
+                                    ? new Switch(
+                                        value: roedores,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            roedores = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                        activeTrackColor: gradientOne,
+                                      )
+                                    : new CupertinoSwitch(
+                                        value: roedores,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            roedores = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                      ),
+                              ),
+                            ],
+                          ),
+                        )),
+                    new Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: new Text(
+                        "Configurações do Aplicativo",
+                        style: new TextStyle(
+                            fontSize: 20.0, fontFamily: "PoppinsRegular"),
+                      ),
                     ),
-                    new FlatButton(
-                      onPressed: () {
-                        Navigator.of(context).popAndPushNamed("/splash");
-                      },
-                      child: new Container(
-                          width: 250.0,
-                          height: 50.0,
-                          margin: new EdgeInsets.only(top: 40.0, bottom: 40.0),
-                          alignment: Alignment.center,
-                          padding: new EdgeInsets.all(10.0),
-                          decoration: new BoxDecoration(
-                              border: new Border.all(
-                                  color: gradientTwo, width: 2.0),
-                              color: Colors.white,
-                              borderRadius: new BorderRadius.all(
-                                  new Radius.circular(50.0))),
-                          child: new Text(
-                            "DELETAR CONTA",
-                            style: new TextStyle(
-                                fontSize: 18.0,
-                                letterSpacing: 0.6,
-                                color: gradientTwo,
-                                fontWeight: FontWeight.w400),
-                          )),
-                    ),
+                    new Card(
+                        elevation: 3.0,
+                        child: new Container(
+                          width: screenSize.width,
+                          padding: new EdgeInsets.only(top: 12.0, bottom: 12.0),
+                          child: new Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              new ListTile(
+                                title: new Text("Notificações"),
+                              ),
+                              new ListTile(
+                                title: new Text("Combinações"),
+                                trailing: defaultTargetPlatform ==
+                                        TargetPlatform.android
+                                    ? new Switch(
+                                        value: matches,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            matches = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                        activeTrackColor: gradientOne,
+                                      )
+                                    : new CupertinoSwitch(
+                                        value: matches,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            matches = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                      ),
+                              ),
+                              new ListTile(
+                                title: new Text("Mensagens"),
+                                trailing: defaultTargetPlatform ==
+                                        TargetPlatform.android
+                                    ? new Switch(
+                                        value: messages,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            messages = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                        activeTrackColor: gradientOne,
+                                      )
+                                    : new CupertinoSwitch(
+                                        value: messages,
+                                        onChanged: (bool newValue) {
+                                          setState(() {
+                                            messages = newValue;
+                                          });
+                                        },
+                                        activeColor: gradientOne,
+                                      ),
+                              ),
+                            ],
+                          ),
+                        )),
+                    new Container(
+                      width: screenSize.width,
+                      margin: new EdgeInsets.only(top: 30.0),
+                      padding: new EdgeInsets.all(10.0),
+                      child: new Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          new FlatButton(
+                            onPressed: () {
+                              _logout();
+                            },
+                            child: new Container(
+                                width: 250.0,
+                                height: 50.0,
+                                margin: new EdgeInsets.only(top: 40.0),
+                                alignment: Alignment.center,
+                                padding: new EdgeInsets.all(10.0),
+                                decoration: new BoxDecoration(
+                                    gradient: new LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        gradientOne,
+                                        gradientTwo,
+                                        gradientThree
+                                      ],
+                                      tileMode: TileMode.repeated,
+                                    ),
+                                    borderRadius: new BorderRadius.all(
+                                        new Radius.circular(50.0))),
+                                child: new Text(
+                                  "LOGOUT",
+                                  style: new TextStyle(
+                                      fontSize: 18.0,
+                                      letterSpacing: 0.6,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w400),
+                                )),
+                          ),
+                          new FlatButton(
+                            onPressed: () {
+                              Navigator.of(context).popAndPushNamed("/splash");
+                            },
+                            child: new Container(
+                                width: 250.0,
+                                height: 50.0,
+                                margin: new EdgeInsets.only(
+                                    top: 40.0, bottom: 40.0),
+                                alignment: Alignment.center,
+                                padding: new EdgeInsets.all(10.0),
+                                decoration: new BoxDecoration(
+                                    border: new Border.all(
+                                        color: gradientTwo, width: 2.0),
+                                    color: Colors.white,
+                                    borderRadius: new BorderRadius.all(
+                                        new Radius.circular(50.0))),
+                                child: new Text(
+                                  "DELETAR CONTA",
+                                  style: new TextStyle(
+                                      fontSize: 18.0,
+                                      letterSpacing: 0.6,
+                                      color: gradientTwo,
+                                      fontWeight: FontWeight.w400),
+                                )),
+                          ),
+                        ],
+                      ),
+                    )
                   ],
                 ),
-              )
-            ],
-          ),
+              );
+            }
+
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          },
         ));
+  }
+
+  _logout() async {
+    final storage = new FlutterSecureStorage();
+
+    await storage.delete(key: 'currentUser');
+    await storage.delete(key: 'token');
+
+    Navigator.of(context)
+        .pushNamedAndRemoveUntil("/login", ModalRoute.withName('/login'));
+  }
+
+  _saveSettings() async {
+    final categories = [];
+
+    if (cachorro) {
+      categories.add('cachorro');
+    }
+
+    if (gato) {
+      categories.add('gato');
+    }
+
+    if (roedores) {
+      categories.add('roedores');
+    }
+
+    if (passaros) {
+      categories.add('passaros');
+    }
+
+    String search_by = '';
+
+    if (cruzamento) {
+      search_by = 'cruzamento';
+    }
+
+    if (adocao) {
+      search_by = 'adocao';
+    }
+
+    if (desaparecidos) {
+      search_by = 'desaparecidos';
+    }
+
+    final url =
+        'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/settings';
+    final storage = new FlutterSecureStorage();
+    final token = await storage.read(key: 'token');
+    final requestBody = {
+      'active': discoverablity ? '1' : '0',
+      'search_by': search_by,
+      'distance': distance.toString(),
+      'categories': jsonEncode(categories),
+      'notifications_matches': matches ? '1' : '0',
+      'notifications_messages': messages ? '1' : '0'
+    };
+
+    final response = await http
+        .put(url, body: requestBody, headers: {'x-access-token': token});
+
+    final data = jsonDecode(response.body);
+
+    if (data['success']) {
+      Flushbar(
+        message: 'Salvo com sucesso.',
+        duration: Duration(seconds: 5),
+        leftBarIndicatorColor: Colors.green.shade300,
+        backgroundColor: Colors.green.shade300,
+        icon: Icon(
+          Icons.error_outline,
+          size: 28,
+          color: Colors.white,
+        ),
+      ).show(context);
+    }
+  }
+
+  _getSettings() async {
+    final url =
+        'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/settings';
+    final storage = new FlutterSecureStorage();
+    final token = await storage.read(key: 'token');
+    final response = await http.get(url, headers: {'x-access-token': token});
+    final data = jsonDecode(response.body);
+
+    if (data['settings'] != null) {
+      List categories = data['settings']['categories'];
+
+      discoverablity = data['settings']['active'] == 1;
+      cruzamento = data['settings']['search_by'] == 'cruzamento';
+      adocao = data['settings']['search_by'] == 'adocao';
+      desaparecidos = data['settings']['search_by'] == 'desaparecidos';
+      distance = double.parse(data['settings']['distance'].toString());
+      cachorro = categories.contains('cachorro');
+      gato = categories.contains('gato');
+      roedores = categories.contains('roedores');
+      passaros = categories.contains('passaros');
+      matches = data['settings']['notifications_matches'] == 1;
+      messages = data['settings']['notifications_messages'] == 1;
+    }
+
+    return data;
   }
 }

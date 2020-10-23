@@ -18,10 +18,8 @@ class _ProfileState extends State<Profile> {
     storage.read(key: 'currentUser').then((value) {
       setState(() {
         user = jsonDecode(value);
-        print(user);
       });
     });
-
 
     super.initState();
   }
@@ -53,19 +51,20 @@ class _ProfileState extends State<Profile> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             new Container(
-              height: 80.0,
-              width: 80.0,
-              decoration:
-                new BoxDecoration(shape: BoxShape.circle, image: DecorationImage(
-                  image: new NetworkImage(user['photoUrl']),
-                  fit: BoxFit.cover,
-                )
-              ),
-            ),
+                height: 80.0,
+                width: 80.0,
+                decoration: user != null
+                    ? new BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          image: new NetworkImage(user['photoUrl']),
+                          fit: BoxFit.cover,
+                        ))
+                    : new BoxDecoration()),
             new Padding(
               padding: const EdgeInsets.all(12.0),
               child: new Text(
-                user['displayName'],
+                user != null ? user['displayName'] : ' ',
                 style: new TextStyle(
                     fontFamily: "PoppinsMedium",
                     fontSize: 20.0,
@@ -73,7 +72,7 @@ class _ProfileState extends State<Profile> {
                     letterSpacing: 0.8),
               ),
             ),
-           /* new Text(
+            /* new Text(
               "Raça: Vira-lata",
               style: new TextStyle(
                   fontFamily: "Poppins",
@@ -120,7 +119,7 @@ class _ProfileState extends State<Profile> {
             ),
             new FlatButton(
               onPressed: () {
-                Navigator.of(context).pushNamed("/profile");        
+                Navigator.of(context).pushNamed("/profile");
               },
               child: new Container(
                   width: 200.0,
@@ -155,11 +154,9 @@ class _ProfileState extends State<Profile> {
                     ],
                   )),
             ),
-
-          
-          new FlatButton(
+            new FlatButton(
               onPressed: () {
-                Navigator.of(context).pushNamed("/profile");        
+                Navigator.of(context).pushNamed("/pets");
               },
               child: new Container(
                   width: 200.0,
@@ -194,13 +191,6 @@ class _ProfileState extends State<Profile> {
                     ],
                   )),
             ),
-
-
-
-
-
-
-
           ],
         ),
       ),

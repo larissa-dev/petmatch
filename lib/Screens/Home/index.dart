@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:petmatch/Screens/Home/activeCard.dart';
 import 'package:petmatch/Screens/Home/data.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,13 +19,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Animation<double> rotate;
   Animation<double> right;
   Animation<double> bottom;
-
   int flag = 0;
 
   List data = imageData;
   //List selectedData = [];
   void initState() {
     super.initState();
+
+    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+        .then((postition) async {
+      final storage = new FlutterSecureStorage();
+      final token = await storage.read(key: 'token');
+      final String url =
+          'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/profile/location';
+
+      final Map requestBody = {
+        "latitude": postition.latitude.toString(),
+        "longitude": postition.longitude.toString(),
+      };
+
+      final response = await http
+          .put(url, body: requestBody, headers: {'x-access-token': token});
+    });
 
     _buttonController = new AnimationController(
         duration: new Duration(milliseconds: 1000), vsync: this);
@@ -173,7 +192,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ? rotate.value
                             : 0.0,
                         skew: data.indexOf(item) == dataLength - 1
-                            ? rotate.value < -10 ? 0.1 : 0.0
+                            ? rotate.value < -10
+                                ? 0.1
+                                : 0.0
                             : 0.0,
                         dismissImg: dismissImg,
                         flag: flag,

@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:petmatch/theme/styles.dart';
 import 'package:flutter/material.dart';
 
-
 class ProfileImage extends StatelessWidget {
   final double margin;
   final double width;
@@ -12,8 +11,10 @@ class ProfileImage extends StatelessWidget {
   final String numtext;
   final Function iconOnClick;
   final Future<File> imageFile;
+  final String imageUrl;
   ProfileImage(
       {this.imageFile,
+      this.imageUrl,
       this.margin,
       this.width,
       this.height,
@@ -58,6 +59,28 @@ class ProfileImage extends StatelessWidget {
               } else if (snapshot.error != null) {
                 return const Text('error picking image.');
               } else {
+                if (imageUrl != null && imageUrl.isNotEmpty) {
+                  return new Stack(
+                    alignment: Alignment.topRight,
+                    children: <Widget>[
+                      new Image.network(
+                        imageUrl,
+                        width: width,
+                        height: height,
+                        fit: BoxFit.cover,
+                      ),
+                      new Container(
+                        width: 25.0,
+                        height: 25.0,
+                        margin: new EdgeInsets.all(8.0),
+                        alignment: Alignment.center,
+                        decoration: new BoxDecoration(
+                            shape: BoxShape.circle, color: Colors.white),
+                        child: new Text(numtext),
+                      ),
+                    ],
+                  );
+                }
                 return const Text('');
               }
             },
@@ -73,7 +96,7 @@ class ProfileImage extends StatelessWidget {
             decoration:
                 new BoxDecoration(shape: BoxShape.circle, color: gradientThree),
             child: new Icon(
-              imageFile == null ? Icons.add : Icons.cancel,
+              imageFile == null && imageUrl == null ? Icons.add : Icons.cancel,
               color: Colors.white,
             ),
           ),

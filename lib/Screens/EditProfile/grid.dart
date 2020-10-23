@@ -3,9 +3,8 @@ import 'dart:io';
 
 class GridImage {
   Future<File> imageFile;
-  GridImage({
-    this.imageFile,
-  });
+  String url;
+  GridImage({this.imageFile, this.url});
 }
 
 class DataListBuilder {
@@ -13,24 +12,31 @@ class DataListBuilder {
 
   GridImage row1 = new GridImage(
     imageFile: null,
+    url: null,
   );
   GridImage row2 = new GridImage(
     imageFile: null,
+    url: null,
   );
   GridImage row3 = new GridImage(
     imageFile: null,
+    url: null,
   );
   GridImage row4 = new GridImage(
     imageFile: null,
+    url: null,
   );
   GridImage row5 = new GridImage(
     imageFile: null,
+    url: null,
   );
   GridImage row6 = new GridImage(
     imageFile: null,
+    url: null,
   );
   GridImage row7 = new GridImage(
     imageFile: null,
+    url: null,
   );
 
   DataListBuilder() {

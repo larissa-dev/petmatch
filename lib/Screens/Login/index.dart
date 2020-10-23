@@ -6,8 +6,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:petmatch/Screens/Login/pages.dart';
 import 'package:petmatch/Screens/Login/styles.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 class Login extends StatefulWidget {
   @override
@@ -40,17 +40,29 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
     final storage = new FlutterSecureStorage();
 
-    await storage.write(key: 'currentUser', value: jsonEncode({
+    Map currentUser = {
       'id': googleUser.id,
       'displayName': googleUser.displayName,
       'email': googleUser.email,
       'photoUrl': googleUser.photoUrl,
-    }));
+    };
 
-    Navigator.of(context).pushNamed('/home');
-    setState(() {
-      loader = false;
-    });
+    await storage.write(key: 'currentUser', value: jsonEncode(currentUser));
+
+    final String url =
+        'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/login';
+    final response = await http.post(url, body: currentUser);
+
+    if (response.statusCode == 200) {
+      Map body = jsonDecode(response.body);
+
+      await storage.write(key: 'token', value: body['token']);
+
+      Navigator.of(context).pushNamed('/home');
+      setState(() {
+        loader = false;
+      });
+    }
   }
 
   @override
@@ -85,8 +97,8 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
               controller: controller,
               itemCount: pages.length,
               itemBuilder: (context, index) => new Pagee(
-                    viewModel: pages[index],
-                  ),
+                viewModel: pages[index],
+              ),
             ),
           ),
           new Container(
