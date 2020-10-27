@@ -2,19 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:petmatch/Components/profileImages.dart';
-import 'package:petmatch/Components/profileInputs.dart';
 import 'package:petmatch/Screens/EditProfile/grid.dart';
 import 'package:petmatch/theme/styles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:dio/dio.dart' as dio;
-import 'package:mime/mime.dart';
-import 'package:http_parser/http_parser.dart';
 
 class EditProfile extends StatefulWidget {
   @override
@@ -22,38 +19,50 @@ class EditProfile extends StatefulWidget {
 }
 
 class _EditProfileState extends State<EditProfile> {
-  Future<File> _imageFile;
+  File imageFileData;
   bool instaValue = true;
   final about = TextEditingController();
   final age = TextEditingController();
   final phone = TextEditingController();
   String gender = '';
   String profileName = '(Nome do Perfil)';
-  List images = [];
+  String photoUrl;
 
   DataListBuilder dataListBuilder = new DataListBuilder();
-  getImage(int index) {
-    List<GridImage> list = dataListBuilder.gridData;
-    print(list[index].url);
-    if (list[index].imageFile != null && list[index].url != null) {
-      //list[index].imageFile = null;
-      setState(() {
-        images.removeAt(index);
-        _imageFile = null;
-      });
-    } else {
-      _imageFile = ImagePicker.pickImage(source: ImageSource.gallery);
 
-      _imageFile.then((onValue) {
-        if (onValue != null) {
-          list[index].imageFile = _imageFile;
-          setState(() {
-            images.add(_imageFile);
-            _imageFile = null;
-          });
-        }
-      });
+  getImage() async {
+    try {
+      var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+
+      if (image != null) {
+        setState(() {
+          imageFileData = image;
+        });
+      }
+    } catch (e) {
+      print(e);
     }
+  }
+
+  Future<String> uploadImage(File imageToUpload) async {
+    var imageFileName = DateTime.now().millisecondsSinceEpoch.toString();
+
+    final StorageReference firebaseStorageRef =
+        FirebaseStorage.instance.ref().child(imageFileName);
+
+    StorageUploadTask uploadTask = firebaseStorageRef.putFile(imageToUpload);
+
+    StorageTaskSnapshot storageSnapshot = await uploadTask.onComplete;
+
+    var downloadUrl = await storageSnapshot.ref.getDownloadURL();
+
+    if (uploadTask.isComplete) {
+      var url = downloadUrl.toString();
+
+      return url;
+    }
+
+    return null;
   }
 
   getProfile() async {
@@ -71,28 +80,47 @@ class _EditProfileState extends State<EditProfile> {
       phone.text = data['user']['phone'];
       profileName = data['user']['name'];
       gender = data['user']['gender'];
-      images = data['user']['pictures'];
-
-      print(images);
+      photoUrl = data['user']['photo'];
     }
 
     return jsonDecode(response.body);
   }
 
   setProfile() async {
+    Flushbar(
+      message: 'Estamos processando suas informações, aguarde.',
+      duration: Duration(seconds: 5),
+      leftBarIndicatorColor: Colors.orange.shade300,
+      backgroundColor: Colors.orange.shade300,
+      icon: Icon(
+        Icons.error_outline,
+        size: 28,
+        color: Colors.white,
+      ),
+    ).show(context);
+
     final storage = new FlutterSecureStorage();
     final token = await storage.read(key: 'token');
+    final storedUser = jsonDecode(await storage.read(key: 'currentUser'));
+    print(storedUser);
     final String url =
         'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/profile';
 
-    final Map requestBody = {
+    if (imageFileData != null) {
+      photoUrl = await uploadImage(imageFileData);
+    }
+
+    Map requestBody = {
       'about': about.text ?? '',
       'age': age.text ?? '',
       'phone': phone.text ?? '',
       'gender': gender ?? '',
+      'photo': photoUrl ?? ''
     };
-    print(images);
-    print(requestBody);
+
+    storedUser['photoUrl'] = photoUrl ?? '';
+
+    await storage.write(key: 'currentUser', value: jsonEncode(storedUser));
 
     final response = await http
         .put(url, body: requestBody, headers: {'x-access-token': token});
@@ -166,7 +194,7 @@ class _EditProfileState extends State<EditProfile> {
                     new Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: new Text(
-                        "Fotos",
+                        "Foto",
                         style: new TextStyle(
                             fontSize: 20.0, fontFamily: "PoppinsRegular"),
                       ),
@@ -179,91 +207,10 @@ class _EditProfileState extends State<EditProfile> {
                           width: 200.0,
                           height: 280.0,
                           numtext: "1",
-                          imageFile: list[0].imageFile,
-                          imageUrl:
-                              _snaopshot.data['user']['pictures'].length > 0
-                                  ? _snaopshot.data['user']['pictures'][0]
-                                  : null,
+                          imageFile: imageFileData,
+                          imageUrl: photoUrl.length > 0 ? photoUrl : null,
                           iconOnClick: () {
-                            getImage(0);
-                          },
-                        ),
-                        new Column(
-                          children: <Widget>[
-                            new ProfileImage(
-                              margin: 10.0,
-                              width: 90.0,
-                              height: 130.0,
-                              numtext: "2",
-                              imageFile: list[1].imageFile,
-                              imageUrl:
-                                  _snaopshot.data['user']['pictures'].length > 1
-                                      ? _snaopshot.data['user']['pictures'][1]
-                                      : null,
-                              iconOnClick: () {
-                                getImage(1);
-                              },
-                            ),
-                            new ProfileImage(
-                              margin: 10.0,
-                              width: 90.0,
-                              height: 130.0,
-                              numtext: "3",
-                              imageFile: list[2].imageFile,
-                              imageUrl:
-                                  _snaopshot.data['user']['pictures'].length > 1
-                                      ? _snaopshot.data['user']['pictures'][2]
-                                      : null,
-                              iconOnClick: () {
-                                getImage(2);
-                              },
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                    new Row(
-                      children: <Widget>[
-                        new ProfileImage(
-                          margin: 10.0,
-                          width: 90.0,
-                          height: 130.0,
-                          numtext: "6",
-                          imageFile: list[5].imageFile,
-                          imageUrl:
-                              _snaopshot.data['user']['pictures'].length > 4
-                                  ? _snaopshot.data['user']['pictures'][5]
-                                  : null,
-                          iconOnClick: () {
-                            getImage(5);
-                          },
-                        ),
-                        new ProfileImage(
-                          margin: 10.0,
-                          width: 90.0,
-                          height: 130.0,
-                          numtext: "5",
-                          imageFile: list[4].imageFile,
-                          imageUrl:
-                              _snaopshot.data['user']['pictures'].length > 3
-                                  ? _snaopshot.data['user']['pictures'][4]
-                                  : null,
-                          iconOnClick: () {
-                            getImage(4);
-                          },
-                        ),
-                        new ProfileImage(
-                          margin: 10.0,
-                          width: 90.0,
-                          height: 130.0,
-                          numtext: "4",
-                          imageFile: list[3].imageFile,
-                          imageUrl:
-                              _snaopshot.data['user']['pictures'].length > 2
-                                  ? _snaopshot.data['user']['pictures'][3]
-                                  : null,
-                          iconOnClick: () {
-                            getImage(3);
+                            getImage();
                           },
                         ),
                       ],

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:petmatch/theme/styles.dart';
@@ -10,7 +9,7 @@ class ProfileImage extends StatelessWidget {
   final double height;
   final String numtext;
   final Function iconOnClick;
-  final Future<File> imageFile;
+  final File imageFile;
   final String imageUrl;
   ProfileImage(
       {this.imageFile,
@@ -20,6 +19,31 @@ class ProfileImage extends StatelessWidget {
       this.height,
       this.numtext,
       this.iconOnClick});
+
+  List<Widget> _buildImageCard() {
+    List<Widget> list = [];
+
+    if (imageUrl != null) {
+      list.add(Image.network(
+        imageUrl,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+      ));
+    }
+
+    list.add(new Container(
+      width: 25.0,
+      height: 25.0,
+      margin: new EdgeInsets.all(8.0),
+      alignment: Alignment.center,
+      decoration:
+          new BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+      child: new Text(numtext),
+    ));
+
+    return list;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,59 +55,9 @@ class ProfileImage extends StatelessWidget {
           width: width,
           height: height,
           decoration: new BoxDecoration(color: Colors.grey),
-          child: new FutureBuilder<File>(
-            future: imageFile,
-            builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
-              if (snapshot.connectionState == ConnectionState.done &&
-                  snapshot.data != null) {
-                return new Stack(
-                  alignment: Alignment.topRight,
-                  children: <Widget>[
-                    new Image.file(
-                      snapshot.data,
-                      width: width,
-                      height: height,
-                      fit: BoxFit.cover,
-                    ),
-                    new Container(
-                      width: 25.0,
-                      height: 25.0,
-                      margin: new EdgeInsets.all(8.0),
-                      alignment: Alignment.center,
-                      decoration: new BoxDecoration(
-                          shape: BoxShape.circle, color: Colors.white),
-                      child: new Text(numtext),
-                    ),
-                  ],
-                );
-              } else if (snapshot.error != null) {
-                return const Text('error picking image.');
-              } else {
-                if (imageUrl != null && imageUrl.isNotEmpty) {
-                  return new Stack(
-                    alignment: Alignment.topRight,
-                    children: <Widget>[
-                      new Image.network(
-                        imageUrl,
-                        width: width,
-                        height: height,
-                        fit: BoxFit.cover,
-                      ),
-                      new Container(
-                        width: 25.0,
-                        height: 25.0,
-                        margin: new EdgeInsets.all(8.0),
-                        alignment: Alignment.center,
-                        decoration: new BoxDecoration(
-                            shape: BoxShape.circle, color: Colors.white),
-                        child: new Text(numtext),
-                      ),
-                    ],
-                  );
-                }
-                return const Text('');
-              }
-            },
+          child: new Stack(
+            alignment: Alignment.topRight,
+            children: _buildImageCard(),
           ),
         ),
         new InkWell(
