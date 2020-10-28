@@ -1,7 +1,6 @@
 import 'package:petmatch/Screens/Chat/chatList.dart';
 import 'package:petmatch/Screens/Chat/chatting.dart';
 import 'package:petmatch/Screens/EditProfile/index.dart';
-import 'package:petmatch/Screens/EditProfilePet/index.dart';
 import 'package:petmatch/Screens/EditProfilePet/pets.dart';
 import 'package:petmatch/Screens/Settings/index.dart';
 import 'package:petmatch/Screens/Splash/index.dart';
@@ -21,7 +20,6 @@ class Routes {
     "/chatList": (BuildContext context) => new ChatList(),
     "/chatScreen": (BuildContext context) => new ChattingScreen(),
     "/pets": (BuildContext context) => new PetsPage(),
-    "/pet": (BuildContext context) => new EditProfilePet(),
   };
   Routes() {
     runApp(new MaterialApp(

@@ -23,7 +23,14 @@ class ProfileImage extends StatelessWidget {
   List<Widget> _buildImageCard() {
     List<Widget> list = [];
 
-    if (imageUrl != null) {
+    if (imageFile != null) {
+      list.add(Image.file(
+        imageFile,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+      ));
+    } else if (imageUrl != null) {
       list.add(Image.network(
         imageUrl,
         width: width,

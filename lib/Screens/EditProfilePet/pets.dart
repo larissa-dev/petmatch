@@ -1,7 +1,10 @@
 import 'dart:convert';
 
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:petmatch/Screens/EditProfilePet/create.dart';
+import 'package:petmatch/Screens/EditProfilePet/index.dart';
 import 'package:petmatch/theme/styles.dart';
 import 'package:http/http.dart' as http;
 
@@ -62,7 +65,12 @@ class _PetsPageState extends State<PetsPage> {
           child: Icon(Icons.add),
         ),
         onPressed: () {
-          Navigator.of(context).pushNamed("/pet");
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreatePet(),
+            ),
+          );
         },
       ),
       body: Container(
@@ -70,7 +78,8 @@ class _PetsPageState extends State<PetsPage> {
         child: FutureBuilder(
           future: petsData,
           builder: (_context, _snapshot) {
-            if (_snapshot.hasData) {
+            if (_snapshot.hasData &&
+                _snapshot.connectionState == ConnectionState.done) {
               return CustomScrollView(slivers: [
                 SliverGrid(
                     gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
@@ -82,19 +91,63 @@ class _PetsPageState extends State<PetsPage> {
                     delegate: SliverChildBuilderDelegate(
                         (BuildContext __context, int index) {
                       return GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  EditPet(_snapshot.data['pets'][index]),
+                            ),
+                          );
+                        },
+                        onLongPress: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: new Text("Remover Pet?"),
+                                content: new Text(
+                                    "Esta ação não poderá ser desfeita."),
+                                actions: <Widget>[
+                                  // define os botões na base do dialogo
+                                  new FlatButton(
+                                    child: new Text("Fechar"),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  new FlatButton(
+                                    child: new Text("Excluir"),
+                                    onPressed: () {
+                                      deletePet(
+                                          _snapshot.data['pets'][index]['id']);
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
                         child: Container(
+                          width: 200.0,
+                          height: 280.0,
                           decoration: BoxDecoration(
+                              color: Colors.grey,
                               borderRadius: BorderRadius.circular(15.0),
                               image: DecorationImage(
-                                  image: NetworkImage(_snapshot.data['pets']
-                                      [index]['pictures'][0]),
+                                  image: NetworkImage(
+                                      _snapshot.data['pets'][index]['photo']),
                                   fit: BoxFit.cover)),
                         ),
                       );
                     }, childCount: _snapshot.data['pets'].length))
               ]);
             }
+
+            if (_snapshot.connectionState == ConnectionState.done) {
+              return Container();
+            }
+
             return Center(
               child: CircularProgressIndicator(),
             );
@@ -110,10 +163,68 @@ class _PetsPageState extends State<PetsPage> {
     final String url =
         'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/pets';
     final response = await http.get(url, headers: {'x-access-token': token});
-    final data = jsonDecode(response.body);
 
-    print(data);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
 
-    return data;
+      return data;
+    }
+
+    Flushbar(
+      message: 'Houve um erro ao processar as informações.',
+      duration: Duration(seconds: 5),
+      leftBarIndicatorColor: Colors.red.shade300,
+      backgroundColor: Colors.red.shade300,
+      icon: Icon(
+        Icons.error_outline,
+        size: 28,
+        color: Colors.white,
+      ),
+    ).show(context);
+
+    return null;
+  }
+
+  deletePet(int id) async {
+    Flushbar(
+      message: 'Estamos processando suas informações, aguarde.',
+      duration: Duration(seconds: 5),
+      leftBarIndicatorColor: Colors.orange.shade300,
+      backgroundColor: Colors.orange.shade300,
+      icon: Icon(
+        Icons.warning_rounded,
+        size: 28,
+        color: Colors.white,
+      ),
+    ).show(context);
+
+    final storage = new FlutterSecureStorage();
+    final token = await storage.read(key: 'token');
+    final String url =
+        'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/pets/$id';
+    final response = await http.delete(url, headers: {'x-access-token': token});
+
+    if (response.statusCode == 200) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => PetsPage()),
+      );
+
+      return;
+    }
+
+    Flushbar(
+      message: 'Houve um erro ao processar as informações.',
+      duration: Duration(seconds: 5),
+      leftBarIndicatorColor: Colors.red.shade300,
+      backgroundColor: Colors.red.shade300,
+      icon: Icon(
+        Icons.error_outline,
+        size: 28,
+        color: Colors.white,
+      ),
+    ).show(context);
+
+    return null;
   }
 }

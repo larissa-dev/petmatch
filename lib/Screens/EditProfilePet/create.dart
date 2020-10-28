@@ -15,16 +15,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 
-class EditPet extends StatefulWidget {
-  final pet;
-
-  EditPet(this.pet);
-
+class CreatePet extends StatefulWidget {
   @override
-  _EditPetState createState() => new _EditPetState();
+  _CreatePetState createState() => new _CreatePetState();
 }
 
-class _EditPetState extends State<EditPet> {
+class _CreatePetState extends State<CreatePet> {
   File imageFileData;
   bool instaValue = true;
   final about = TextEditingController();
@@ -52,46 +48,6 @@ class _EditPetState extends State<EditPet> {
   bool passaros = false;
 
   bool roedores = false;
-
-  @override
-  void initState() {
-    if (widget.pet['type'] == 'Gato') {
-      gato = true;
-    }
-
-    if (widget.pet['type'] == 'Cachorro') {
-      cachorro = true;
-    }
-
-    if (widget.pet['type'] == 'Passaro') {
-      passaros = true;
-    }
-
-    if (widget.pet['type'] == 'Roedor') {
-      roedores = true;
-    }
-
-    if (widget.pet['category'] == 'Adoção') {
-      adocao = true;
-    }
-
-    if (widget.pet['category'] == 'Cruzamento') {
-      cruzamento = true;
-    }
-
-    if (widget.pet['category'] == 'Desaparecido') {
-      desaparecidos = true;
-    }
-
-    photoUrl = widget.pet['photo'];
-    name.text = widget.pet['name'];
-    about.text = widget.pet['about'];
-    age.text = widget.pet['age'] != null ? widget.pet['age'].toString() : '';
-    species.text = widget.pet['species'];
-    gender = widget.pet['gender'];
-
-    super.initState();
-  }
 
   getImage() async {
     try {
@@ -145,7 +101,7 @@ class _EditPetState extends State<EditPet> {
     final storage = new FlutterSecureStorage();
     final token = await storage.read(key: 'token');
     final String url =
-        'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/pets/${widget.pet['id']}';
+        'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/pets';
 
     if (imageFileData != null) {
       photoUrl = await uploadImage(imageFileData);
@@ -194,7 +150,7 @@ class _EditPetState extends State<EditPet> {
     };
 
     final response = await http
-        .put(url, body: requestBody, headers: {'x-access-token': token});
+        .post(url, body: requestBody, headers: {'x-access-token': token});
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
