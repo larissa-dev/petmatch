@@ -21,9 +21,9 @@ class EditProfile extends StatefulWidget {
 class _EditProfileState extends State<EditProfile> {
   File imageFileData;
   bool instaValue = true;
-  final about = TextEditingController();
-  final age = TextEditingController();
-  final phone = TextEditingController();
+  TextEditingController about = TextEditingController();
+  TextEditingController age = TextEditingController();
+  TextEditingController phone = TextEditingController();
   String gender = '';
   String profileName = '(Nome do Perfil)';
   String photoUrl;
@@ -76,7 +76,8 @@ class _EditProfileState extends State<EditProfile> {
 
     if (data['success']) {
       about.text = data['user']['about'];
-      age.text = data['user']['age'].toString();
+      age.text =
+          data['user']['age'] == null ? '' : data['user']['age'].toString();
       phone.text = data['user']['phone'];
       profileName = data['user']['name'];
       gender = data['user']['gender'];
@@ -102,7 +103,6 @@ class _EditProfileState extends State<EditProfile> {
     final storage = new FlutterSecureStorage();
     final token = await storage.read(key: 'token');
     final storedUser = jsonDecode(await storage.read(key: 'currentUser'));
-    print(storedUser);
     final String url =
         'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/profile';
 
@@ -112,7 +112,7 @@ class _EditProfileState extends State<EditProfile> {
 
     Map requestBody = {
       'about': about.text ?? '',
-      'age': age.text ?? '',
+      'age': age.text ?? 0,
       'phone': phone.text ?? '',
       'gender': gender ?? '',
       'photo': photoUrl ?? ''
@@ -122,8 +122,9 @@ class _EditProfileState extends State<EditProfile> {
 
     await storage.write(key: 'currentUser', value: jsonEncode(storedUser));
 
-    final response = await http
-        .put(url, body: requestBody, headers: {'x-access-token': token});
+    final response = await http.put(url,
+        body: jsonEncode(requestBody),
+        headers: {'x-access-token': token, "Content-Type": "application/json"});
 
     final data = jsonDecode(response.body);
 
