@@ -533,18 +533,18 @@ class _SettingsState extends State<Settings> {
       categories.add('passaros');
     }
 
-    String search_by = '';
+    List searchBy = [];
 
     if (cruzamento) {
-      search_by = 'cruzamento';
+      searchBy.add('Cruzamento');
     }
 
     if (adocao) {
-      search_by = 'adocao';
+      searchBy.add('Adoção');
     }
 
     if (desaparecidos) {
-      search_by = 'desaparecidos';
+      searchBy.add('Desaparecido');
     }
 
     final url =
@@ -553,7 +553,7 @@ class _SettingsState extends State<Settings> {
     final token = await storage.read(key: 'token');
     final requestBody = {
       'active': discoverablity ? '1' : '0',
-      'search_by': search_by,
+      'search_by': jsonEncode(searchBy),
       'distance': distance.toString(),
       'categories': jsonEncode(categories),
       'notifications_matches': matches ? '1' : '0',
@@ -590,11 +590,12 @@ class _SettingsState extends State<Settings> {
 
     if (data['settings'] != null) {
       List categories = data['settings']['categories'];
+      List searchBy = data['settings']['search_by'];
 
       discoverablity = data['settings']['active'] == 1;
-      cruzamento = data['settings']['search_by'] == 'cruzamento';
-      adocao = data['settings']['search_by'] == 'adocao';
-      desaparecidos = data['settings']['search_by'] == 'desaparecidos';
+      cruzamento = searchBy.contains('Cruzamento');
+      adocao = searchBy.contains('Adoção');
+      desaparecidos = searchBy.contains('Desaparecido');
       distance = double.parse(data['settings']['distance'].toString());
       cachorro = categories.contains('cachorro');
       gato = categories.contains('gato');

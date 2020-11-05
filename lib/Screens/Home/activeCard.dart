@@ -19,6 +19,7 @@ class ActiveCard extends StatelessWidget {
   Function swipeRight;
   Function swipeLeft;
   String tag;
+  Map pet;
   ActiveCard(
       {this.addImg,
       this.bottom,
@@ -32,7 +33,8 @@ class ActiveCard extends StatelessWidget {
       this.skew,
       this.swipeLeft,
       this.swipeRight,
-      this.tag});
+      this.tag,
+      this.pet});
 
   @override
   Widget build(BuildContext context) {
@@ -40,20 +42,28 @@ class ActiveCard extends StatelessWidget {
 
     return new Positioned(
         bottom: 80.0 + bottom,
-        right: flag == 0 ? right != 0.0 ? right : null : null,
-        left: flag == 1 ? right != 0.0 ? right : null : null,
+        right: flag == 0
+            ? right != 0.0
+                ? right
+                : null
+            : null,
+        left: flag == 1
+            ? right != 0.0
+                ? right
+                : null
+            : null,
         child: new Dismissible(
           key: new Key(new Random().toString()),
           crossAxisEndOffset: -0.3,
           onResize: () {},
           onDismissed: (direction) {
-            dismissImg(img);
+            dismissImg(pet);
           },
           child: new Transform(
             alignment: flag == 0 ? Alignment.bottomRight : Alignment.bottomLeft,
             //transform: null,
             transform: new Matrix4.skewX(skew),
-            //..rotateX(-math.pi / rotation),
+            //..rotateX(-math.pi / rotation),d
             child: new RotationTransition(
               turns: new AlwaysStoppedAnimation(
                   flag == 0 ? rotation / 360 : -rotation / 360),

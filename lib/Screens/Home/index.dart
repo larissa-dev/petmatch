@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:petmatch/Screens/Home/activeCard.dart';
-import 'package:petmatch/Screens/Home/data.dart';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:http/http.dart' as http;
+import 'package:petmatch/Components/swipeButton.dart';
+import 'package:petmatch/Screens/Home/detail.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,17 +14,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  AnimationController _buttonController;
-  Animation<double> rotate;
-  Animation<double> right;
-  Animation<double> bottom;
-  int flag = 0;
+  List<Widget> cardList;
+  Future apiData;
+  Size screenSize;
 
-  List data = imageData;
-  //List selectedData = [];
   void initState() {
-    super.initState();
-
     Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
         .then((postition) async {
       final storage = new FlutterSecureStorage();
@@ -38,171 +31,241 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         "longitude": postition.longitude.toString(),
       };
 
-      final response = await http
+      await http
           .put(url, body: requestBody, headers: {'x-access-token': token});
     });
 
-    _buttonController = new AnimationController(
-        duration: new Duration(milliseconds: 1000), vsync: this);
+    apiData = _search();
 
-    rotate = new Tween<double>(
-      begin: -0.0,
-      end: -40.0,
-    ).animate(
-      new CurvedAnimation(
-        parent: _buttonController,
-        curve: Curves.ease,
-      ),
-    );
-    rotate.addListener(() {
-      setState(() {
-        if (rotate.isCompleted) {
-          data.removeLast();
-          // data.insert(0, i);
-
-          _buttonController.reset();
-        }
-      });
-    });
-
-    right = new Tween<double>(
-      begin: 0.0,
-      end: 400.0,
-    ).animate(
-      new CurvedAnimation(
-        parent: _buttonController,
-        curve: Curves.ease,
-      ),
-    );
-    bottom = new Tween<double>(
-      begin: 15.0,
-      end: 100.0,
-    ).animate(
-      new CurvedAnimation(
-        parent: _buttonController,
-        curve: Curves.ease,
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _buttonController.dispose();
-    super.dispose();
-  }
-
-  Future<Null> _swipeAnimation() async {
-    try {
-      await _buttonController.forward();
-    } on TickerCanceled {}
-  }
-
-  dismissImg(DecorationImage img) {
-    setState(() {
-      data.remove(img);
-    });
-  }
-
-  addImg(DecorationImage img) {
-    setState(() {
-      data.remove(img);
-      // selectedData.add(img);
-    });
-  }
-
-  swipeRight() {
-    if (flag == 0)
-      setState(() {
-        flag = 1;
-      });
-    _swipeAnimation();
-  }
-
-  swipeLeft() {
-    if (flag == 1)
-      setState(() {
-        flag = 0;
-      });
-    _swipeAnimation();
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    timeDilation = 0.4;
+    screenSize = MediaQuery.of(context).size;
 
-    double initialBottom = 15.0;
-    var dataLength = data.length;
-    double backCardPosition = initialBottom + (dataLength - 1) * 10 + 10;
-    double backCardWidth = -10.0;
-    return (new Scaffold(
-        appBar: new AppBar(
-          automaticallyImplyLeading: false,
-          elevation: 0.5,
-          brightness: Brightness.light,
-          backgroundColor: Colors.white,
-          title: new Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              new Text(
-                "Buscar",
-                style: new TextStyle(
-                  color: new Color.fromRGBO(92, 107, 122, 1.0),
-                  fontSize: 25.0,
-                  fontFamily: "Poppins",
-                ),
-              ),
-              new Container(
-                width: 15.0,
-                height: 15.0,
-                margin: new EdgeInsets.only(bottom: 20.0),
-                alignment: Alignment.center,
-                child: new Text(
-                  dataLength.toString(),
-                  style: new TextStyle(fontSize: 10.0),
-                ),
-                decoration: new BoxDecoration(
-                    color: Colors.red, shape: BoxShape.circle),
-              )
-            ],
+    return new Scaffold(
+      appBar: _buildAppBar(),
+      body: Container(
+        margin: EdgeInsets.only(top: 50),
+        child: Center(
+          child: FutureBuilder(
+            future: apiData,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Stack(
+                  alignment: Alignment.center,
+                  children: cardList,
+                );
+              }
+
+              return CircularProgressIndicator();
+            },
           ),
         ),
-        body: new Container(
-          color: const Color.fromRGBO(239, 239, 245, 1.0),
-          alignment: Alignment.center,
-          child: dataLength > 0
-              ? new Stack(
-                  alignment: AlignmentDirectional.center,
-                  children: data.map((item) {
-                    backCardPosition = backCardPosition - 10;
-                    backCardWidth = backCardWidth + 10;
-                    return new ActiveCard(
-                        tag: data.indexOf(item) == dataLength - 1
-                            ? "img" + data.indexOf(item).toString()
-                            : "noimg" + data.indexOf(item).toString(),
-                        img: item,
-                        bottom: data.indexOf(item) == dataLength - 1
-                            ? bottom.value
-                            : backCardPosition,
-                        right: data.indexOf(item) == dataLength - 1
-                            ? right.value
-                            : 0.0,
-                        left: 0.0,
-                        cardWidth: backCardWidth,
-                        rotation: data.indexOf(item) == dataLength - 1
-                            ? rotate.value
-                            : 0.0,
-                        skew: data.indexOf(item) == dataLength - 1
-                            ? rotate.value < -10
-                                ? 0.1
-                                : 0.0
-                            : 0.0,
-                        dismissImg: dismissImg,
-                        flag: flag,
-                        swipeRight: swipeRight,
-                        swipeLeft: swipeLeft);
-                  }).toList())
-              : new Text("Não nenhum pet ao seu redor!",
-                  style: new TextStyle(color: Colors.grey, fontSize: 20.0)),
-        )));
+      ),
+    );
+  }
+
+  void _removeCard() {
+    setState(() {
+      cardList.removeLast();
+    });
+  }
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      elevation: 0.5,
+      brightness: Brightness.light,
+      backgroundColor: Colors.white,
+      title: new Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          new Text(
+            "Buscar",
+            style: new TextStyle(
+              color: new Color.fromRGBO(92, 107, 122, 1.0),
+              fontSize: 25.0,
+              fontFamily: "Poppins",
+            ),
+          ),
+          new Container(
+            width: 15.0,
+            height: 15.0,
+            margin: new EdgeInsets.only(bottom: 20.0),
+            alignment: Alignment.center,
+            child: new Text(
+              '0',
+              style: new TextStyle(fontSize: 10.0),
+            ),
+            decoration:
+                new BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+          )
+        ],
+      ),
+    );
+  }
+
+  Future<List> _search() async {
+    final storage = new FlutterSecureStorage();
+    final token = await storage.read(key: 'token');
+    final String url =
+        'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/pets/search';
+    final response = await http.get(url, headers: {'x-access-token': token});
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+
+      if (responseData['success']) {
+        List pets = responseData['pets'];
+        List<Widget> cards = [];
+        int index = 0;
+
+        pets.forEach((pet) {
+          cards.add(Positioned(
+            top: double.parse(((index + 1) * 10).toString()),
+            child: Draggable(
+              onDragEnd: (drag) {
+                if (drag.offset.direction > 1) {
+                  _removeCard();
+                } else {
+                  _match();
+                }
+              },
+              childWhenDragging: Container(),
+              feedback: Card(
+                elevation: 12,
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                child: Container(
+                  width: screenSize.width * 0.9,
+                  height: 500,
+                  child: Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      Container(
+                        width: screenSize.width * 0.9,
+                        child: Image.network(
+                          pet['photo'],
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Container(
+                        height: 500 * 0.2,
+                        width: screenSize.width * 0.9,
+                        color: Colors.white,
+                        child: new Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            new SwipeButton(
+                              text: "NÃO",
+                              onClick: () {
+                                _removeCard();
+                              },
+                            ),
+                            new SwipeButton(
+                              text: "SIM",
+                              onClick: () {
+                                _match();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              child: Hero(
+                tag: 'pet' + pet['id'].toString(),
+                child: Card(
+                  elevation: 12,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  child: Container(
+                    width: screenSize.width * 0.9,
+                    height: 500,
+                    child: Stack(
+                      alignment: Alignment.bottomCenter,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => DetailPage(
+                                        pet: pet,
+                                        yes: _match,
+                                        no: _removeCard,
+                                      )),
+                            );
+                          },
+                          child: Container(
+                            width: screenSize.width * 0.9,
+                            child: Image.network(
+                              pet['photo'],
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 500 * 0.2,
+                          width: screenSize.width * 0.9,
+                          color: Colors.white,
+                          child: new Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              new SwipeButton(
+                                text: "NÃO",
+                                onClick: () {
+                                  _removeCard();
+                                },
+                              ),
+                              new SwipeButton(
+                                text: "SIM",
+                                onClick: () {
+                                  _match();
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ));
+
+          index++;
+        });
+
+        cardList = cards;
+
+        return responseData['pets'];
+      }
+    }
+
+    return [];
+  }
+
+  _match() {
+    Flushbar(
+      message: 'MATCH!!!',
+      duration: Duration(seconds: 5),
+      leftBarIndicatorColor: Colors.green.shade300,
+      backgroundColor: Colors.green.shade300,
+      icon: Icon(
+        Icons.error_outline,
+        size: 28,
+        color: Colors.white,
+      ),
+    ).show(context);
+
+    _removeCard();
   }
 }

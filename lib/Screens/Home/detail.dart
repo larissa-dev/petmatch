@@ -8,8 +8,12 @@ import 'package:flutter/scheduler.dart';
 
 class DetailPage extends StatefulWidget {
   final DecorationImage type;
+  final Map pet;
+  final Function yes;
+  final Function no;
 
-  const DetailPage({Key key, this.type}) : super(key: key);
+  const DetailPage({Key key, this.type, this.pet, this.yes, this.no})
+      : super(key: key);
 
   @override
   _DetailPageState createState() => new _DetailPageState(type: type);
@@ -64,16 +68,14 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
       data: new ThemeData(
         brightness: Brightness.light,
         primaryColor: const Color.fromRGBO(239, 239, 245, 1.0),
-        platform: Theme
-            .of(context)
-            .platform,
+        platform: Theme.of(context).platform,
       ),
       child: new Container(
         width: width.value,
         height: 400.0,
         color: const Color.fromRGBO(239, 239, 245, 1.0),
         child: new Hero(
-          tag: "img" + data.indexOf(type).toString(),
+          tag: 'pet' + widget.pet['id'].toString(),
           child: new Card(
             margin: new EdgeInsets.all(0.0),
             color: Colors.transparent,
@@ -111,7 +113,7 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                         snap: _appBarBehavior == AppBarBehavior.snapping,
                         flexibleSpace: new FlexibleSpaceBar(
                           title: new Text(
-                            name[data.indexOf(type)],
+                            ' ',
                             style: new TextStyle(
                               color: new Color.fromRGBO(92, 107, 122, 1.0),
                               fontSize: 25.0,
@@ -124,7 +126,9 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                                 width: width.value,
                                 height: _appBarHeight,
                                 decoration: new BoxDecoration(
-                                  image: data[data.indexOf(type)],
+                                  image: DecorationImage(
+                                      image: NetworkImage(widget.pet['photo']),
+                                      fit: BoxFit.cover),
                                 ),
                               ),
                             ],
@@ -151,7 +155,7 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                                                 color: Colors.black12))),
                                     child: new Row(
                                       mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                          MainAxisAlignment.spaceBetween,
                                       children: <Widget>[
                                         new Row(
                                           children: <Widget>[
@@ -161,8 +165,9 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                                             ),
                                             new Padding(
                                               padding:
-                                              const EdgeInsets.all(4.0),
-                                              child: new Text("Raça: "),
+                                                  const EdgeInsets.all(4.0),
+                                              child: new Text("Raça: " +
+                                                  widget.pet['species']),
                                             )
                                           ],
                                         ),
@@ -174,8 +179,12 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                                             ),
                                             new Padding(
                                               padding:
-                                              const EdgeInsets.all(8.0),
-                                              child: new Text("Distancia km"),
+                                                  const EdgeInsets.all(8.0),
+                                              child: new Text("Distancia: " +
+                                                  (widget.pet['distancy']
+                                                          .toString() ??
+                                                      ' ') +
+                                                  'km'),
                                             )
                                           ],
                                         ),
@@ -186,13 +195,22 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                                     padding: const EdgeInsets.only(
                                         top: 16.0, bottom: 8.0),
                                     child: new Text(
+                                      "Nome",
+                                      style: new TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  new Text(widget.pet['name'] ?? ' '),
+                                  new Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 16.0, bottom: 8.0),
+                                    child: new Text(
                                       "Descrição (Sobre o animal)",
                                       style: new TextStyle(
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ),
-                                  new Text(
-                                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed the eiusmod tempor incidid ut labore et dolore magna aliqua."),
+                                  new Text(widget.pet['about'] ?? ' '),
                                   new Container(
                                     margin: new EdgeInsets.only(top: 25.0),
                                     padding: new EdgeInsets.only(
@@ -205,40 +223,21 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                                                 color: Colors.black12))),
                                     child: new Column(
                                       mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
+                                          MainAxisAlignment.spaceEvenly,
                                       crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                          CrossAxisAlignment.start,
                                       children: <Widget>[
                                         new Text(
-                                          "Interesses",   //será exibido a(s) categoria(s) que o animal está cadastrado. 
+                                          "Categoria", //será exibido a(s) categoria(s) que o animal está cadastrado.
                                           style: new TextStyle(
                                               fontWeight: FontWeight.bold),
                                         ),
                                         new Row(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
+                                              MainAxisAlignment.start,
                                           // crossAxisAlignment:
                                           //     CrossAxisAlignment.start,
                                           children: <Widget>[
-                                            new Container(
-                                              width: 70.0,
-                                              height: 30.0,
-                                              alignment: Alignment.center,
-                                              decoration: new BoxDecoration(
-                                                  color: gradientOne,
-                                                  borderRadius:
-                                                  new BorderRadius.all(
-                                                      new Radius.circular(
-                                                          30.0))),
-                                              child: new Text(
-                                                "Adoção",
-                                                style: new TextStyle(
-                                                    fontSize: 15.0,
-                                                    color: Colors.white,
-                                                    fontWeight:
-                                                    FontWeight.w400),
-                                              ),
-                                            ),
                                             new Container(
                                               width: 100.0,
                                               height: 30.0,
@@ -246,37 +245,18 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                                               decoration: new BoxDecoration(
                                                   color: gradientOne,
                                                   borderRadius:
-                                                  new BorderRadius.all(
-                                                      new Radius.circular(
-                                                          30.0))),
+                                                      new BorderRadius.all(
+                                                          new Radius.circular(
+                                                              30.0))),
                                               child: new Text(
-                                                "Cruzamento",
+                                                widget.pet['category'] ?? " ",
                                                 style: new TextStyle(
                                                     fontSize: 15.0,
                                                     color: Colors.white,
                                                     fontWeight:
-                                                    FontWeight.w400),
+                                                        FontWeight.w400),
                                               ),
                                             ),
-                                            new Container(
-                                              width: 110.0,
-                                              height: 30.0,
-                                              alignment: Alignment.center,
-                                              decoration: new BoxDecoration(
-                                                  color: gradientOne,
-                                                  borderRadius:
-                                                  new BorderRadius.all(
-                                                      new Radius.circular(
-                                                          30.0))),
-                                              child: new Text(
-                                                "Desaparecidos",
-                                                style: new TextStyle(
-                                                    fontSize: 15.0,
-                                                    color: Colors.white,
-                                                    fontWeight:
-                                                    FontWeight.w400),
-                                              ),
-                                            )
                                           ],
                                         )
                                       ],
@@ -293,29 +273,31 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                       ),
                     ],
                   ),
-                  
-                  new Container(
-                      width: 600.0,
-                      height: 80.0,
-                      decoration: new BoxDecoration(
-                        color: const Color.fromRGBO(239, 239, 245, 1.0),
-                      ),
-                      alignment: Alignment.center,
-                      child: new Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          new SwipeButton(
-                            text: "NÃO",
-                            onClick: () {},
-                          ),
-                          new SwipeButton(
-                            text: "SIM",
-                            onClick: () {},
-                          ),
-                        ],
-                      ))
+                  // new Container(
+                  //     width: 600.0,
+                  //     height: 80.0,
+                  //     decoration: new BoxDecoration(
+                  //       color: const Color.fromRGBO(239, 239, 245, 1.0),
+                  //     ),
+                  //     alignment: Alignment.center,
+                  //     child: new Row(
+                  //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  //       children: <Widget>[
+                  //         new SwipeButton(
+                  //           text: "NÃO",
+                  //           onClick: () {
+                  //             widget.no();
 
-            /*new FlatButton(
+                  //           },
+                  //         ),
+                  //         new SwipeButton(
+                  //           text: "SIM",
+                  //           onClick: widget.yes,
+                  //         ),
+                  //       ],
+                  //     ))
+
+                  /*new FlatButton(
               onPressed: () {
                 Navigator.of(context).pushNamed("/settings");
               },
@@ -352,10 +334,6 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                     ],
                   )),
             ),*/
-
-
-
-
                 ],
               ),
             ),

@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "557182762612-t97lsks6ouuq0nklpg2nltamk1cs3848.apps.googleusercontent.com",
+          "client_id": "557182762612-4292gv9u00ofife82ctphklr85ekqnsk.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.petmatch",
-            "certificate_hash": "e1db07a766fad239b25ef149ec0e415a3d8297d0"
+            "certificate_hash": "941e36743b8495e9169d659a1d0aaf92146a32c6"
           }
         },
         {
