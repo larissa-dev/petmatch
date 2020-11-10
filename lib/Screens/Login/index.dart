@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:petmatch/Screens/Login/pages.dart';
@@ -8,6 +9,7 @@ import 'package:petmatch/Screens/Login/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -38,6 +40,14 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     );
 
     final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+    final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken, idToken: googleAuth.idToken);
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    final User firebaseUser =
+        (await auth.signInWithCredential(credential)).user;
+
     final storage = new FlutterSecureStorage();
 
     Map currentUser = {

@@ -14,7 +14,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  List<Widget> cardList;
+  List<Widget> cardList = [];
   Future apiData;
   Size screenSize;
 
@@ -122,65 +122,27 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         List<Widget> cards = [];
         int index = 0;
 
-        pets.forEach((pet) {
-          cards.add(Positioned(
-            top: double.parse(((index + 1) * 10).toString()),
-            child: Draggable(
-              onDragEnd: (drag) {
-                if (drag.offset.direction > 1) {
-                  _removeCard();
-                } else {
-                  _match();
-                }
-              },
-              childWhenDragging: Container(),
-              feedback: Card(
-                elevation: 12,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-                child: Container(
-                  width: screenSize.width * 0.9,
-                  height: 500,
-                  child: Stack(
-                    alignment: Alignment.bottomCenter,
-                    children: [
-                      Container(
-                        width: screenSize.width * 0.9,
-                        child: Image.network(
-                          pet['photo'],
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      Container(
-                        height: 500 * 0.2,
-                        width: screenSize.width * 0.9,
-                        color: Colors.white,
-                        child: new Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            new SwipeButton(
-                              text: "NÃO",
-                              onClick: () {
-                                _removeCard();
-                              },
-                            ),
-                            new SwipeButton(
-                              text: "SIM",
-                              onClick: () {
-                                _match();
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              child: Hero(
-                tag: 'pet' + pet['id'].toString(),
-                child: Card(
+        if (pets.isEmpty || pets == null) {
+          cards.add(Container(
+            child: Text('Nenhum pet próximo de você.'),
+          ));
+        } else {
+
+          pets.forEach((pet) {
+            cards.add(Positioned(
+              top: double.parse(((index + 1) * 10).toString()),
+              child: Draggable(
+                onDragEnd: (DraggableDetails drag) {
+                  if (drag.offset.direction > 1 && drag.offset.dx < -100.0) {
+                    _removeCard();
+                  }
+
+                  if (drag.offset.direction < 1 && drag.offset.dx > 100.0) {
+                    _match();
+                  }
+                },
+                childWhenDragging: Container(),
+                feedback: Card(
                   elevation: 12,
                   color: Colors.white,
                   shape: RoundedRectangleBorder(
@@ -191,24 +153,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     child: Stack(
                       alignment: Alignment.bottomCenter,
                       children: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => DetailPage(
-                                        pet: pet,
-                                        yes: _match,
-                                        no: _removeCard,
-                                      )),
-                            );
-                          },
-                          child: Container(
-                            width: screenSize.width * 0.9,
-                            child: Image.network(
-                              pet['photo'],
-                              fit: BoxFit.cover,
-                            ),
+                        Container(
+                          width: screenSize.width * 0.9,
+                          child: Image.network(
+                            pet['photo'],
+                            fit: BoxFit.cover,
                           ),
                         ),
                         Container(
@@ -237,16 +186,80 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
+                child: Hero(
+                  tag: 'pet' + pet['id'].toString(),
+                  child: Card(
+                    elevation: 12,
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    child: Container(
+                      width: screenSize.width * 0.9,
+                      height: 500,
+                      child: Stack(
+                        alignment: Alignment.bottomCenter,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => DetailPage(
+                                          pet: pet,
+                                          yes: _match,
+                                          no: _removeCard,
+                                        )),
+                              );
+                            },
+                            child: Container(
+                              width: screenSize.width * 0.9,
+                              child: Image.network(
+                                pet['photo'],
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            height: 500 * 0.2,
+                            width: screenSize.width * 0.9,
+                            color: Colors.white,
+                            child: new Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                new SwipeButton(
+                                  text: "NÃO",
+                                  onClick: () {
+                                    _removeCard();
+                                  },
+                                ),
+                                new SwipeButton(
+                                  text: "SIM",
+                                  onClick: () {
+                                    _match();
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ));
+            ));
 
-          index++;
-        });
+            index++;
+          });
+        }
 
         cardList = cards;
 
         return responseData['pets'];
+      } else {
+        cardList.add(Container(
+          child: Text('Nenhum pet próximo de você.'),
+        ));
       }
     }
 

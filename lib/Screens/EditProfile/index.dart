@@ -24,11 +24,19 @@ class _EditProfileState extends State<EditProfile> {
   TextEditingController about = TextEditingController();
   TextEditingController age = TextEditingController();
   TextEditingController phone = TextEditingController();
-  String gender = '';
+  String gender;
   String profileName = '(Nome do Perfil)';
   String photoUrl;
 
   DataListBuilder dataListBuilder = new DataListBuilder();
+
+  Future apiData;
+
+  void initState() {
+    apiData = getProfile();
+
+    super.initState();
+  }
 
   getImage() async {
     try {
@@ -165,7 +173,7 @@ class _EditProfileState extends State<EditProfile> {
         centerTitle: false,
         leading: new FlatButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed("/home");
             },
             child:
                 new Image(image: new ExactAssetImage("assets/back-arrow.png"))),
@@ -183,9 +191,15 @@ class _EditProfileState extends State<EditProfile> {
         ],
       ),
       body: FutureBuilder(
-        future: getProfile(),
-        builder: (_context, _snaopshot) {
-          if (_snaopshot.hasData) {
+        future: apiData,
+        builder: (_context, _snapshot) {
+          if (_snapshot.hasData && !_snapshot.data['success']) {
+            return Center(
+              child: Text('Houve um problema ao trazer suas informações'),
+            );
+          }
+
+          if (_snapshot.hasData) {
             return new SingleChildScrollView(
                 padding: new EdgeInsets.all(10.0),
                 child: new Column(
@@ -323,6 +337,7 @@ class _EditProfileState extends State<EditProfile> {
                               height: 50.0,
                               alignment: Alignment.center,
                               decoration: new BoxDecoration(
+                                  color: gender == 'M' ? gradientThree : Colors.transparent,
                                   border: new Border.all(
                                       width: 2.0, color: gradientThree),
                                   borderRadius: new BorderRadius.all(
@@ -332,7 +347,7 @@ class _EditProfileState extends State<EditProfile> {
                                 style: new TextStyle(
                                     fontSize: 18.0,
                                     letterSpacing: 0.6,
-                                    color: gradientThree,
+                                    color: gender == 'M' ? Colors.white : gradientThree,
                                     fontWeight: FontWeight.w400),
                               ),
                             ),
@@ -348,7 +363,7 @@ class _EditProfileState extends State<EditProfile> {
                               height: 50.0,
                               alignment: Alignment.center,
                               decoration: new BoxDecoration(
-                                  color: gradientOne,
+                                  color: gender == 'F' ? gradientOne : Colors.transparent,
                                   border: new Border.all(
                                       width: 2.0, color: gradientOne),
                                   borderRadius: new BorderRadius.all(
@@ -358,7 +373,7 @@ class _EditProfileState extends State<EditProfile> {
                                 style: new TextStyle(
                                     fontSize: 18.0,
                                     letterSpacing: 0.6,
-                                    color: Colors.white,
+                                    color: gender == 'F' ? Colors.white : gradientOne,
                                     fontWeight: FontWeight.w400),
                               ),
                             ),

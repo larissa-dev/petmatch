@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:petmatch/Screens/TabController/index.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key key}) : super(key: key);
@@ -9,17 +12,22 @@ class SplashScreen extends StatefulWidget {
 }
 
 class SplashScreenState extends State<SplashScreen> {
+  final Future<FirebaseApp> _initialization = Firebase.initializeApp();
+  Future<bool> isUserLoggedIn;
+
   var twenty;
   Timer t2;
   String routeName;
   @override
   void initState() {
-    super.initState();
+    isUserLoggedIn = _checkUserLogin();
+
     twenty = const Duration(seconds: 3);
     t2 = new Timer(twenty, () {
-      routeName = "/login";
       navigate(context, routeName);
     });
+    
+    super.initState();
   }
 
   @override
@@ -34,15 +42,36 @@ class SplashScreenState extends State<SplashScreen> {
     }
   }
 
+  Future<bool> _checkUserLogin() async {
+    final storage = new FlutterSecureStorage();
+    final token = await storage.read(key: 'token');
+
+    if (token == null) {
+      return false;
+    }
+
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return (new Scaffold(
-        body: new Container(
-      decoration: new BoxDecoration(
-          image: new DecorationImage(
-        image: new ExactAssetImage('assets/screen.png'),
-        fit: BoxFit.cover,
-      )),
-    )));
+    return Scaffold(
+      body: FutureBuilder(
+      future: Future.wait([_initialization, isUserLoggedIn]),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          routeName = snapshot.data[1] ? '/home' : '/login';
+        } 
+
+        return Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: ExactAssetImage('assets/screen.png'),
+              fit: BoxFit.cover,
+            )
+          ),
+        );
+      },
+    ));
   }
 }

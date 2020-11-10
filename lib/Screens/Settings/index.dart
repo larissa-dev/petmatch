@@ -27,7 +27,7 @@ class _SettingsState extends State<Settings> {
   double distance = 0.0;
   double ageRangeLeft = 0.0;
   double ageRangeRight = 0.0;
-  RangeValues _values = RangeValues(18, 30);
+  bool loading = false;
 
   Future settingsData;
   @override
@@ -56,7 +56,7 @@ class _SettingsState extends State<Settings> {
           centerTitle: false,
           leading: new FlatButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pushNamed("/home");
               },
               child: new Image(
                   image: new ExactAssetImage("assets/back-arrow.png"))),
@@ -66,7 +66,7 @@ class _SettingsState extends State<Settings> {
                 onPressed: () {
                   _saveSettings();
                 },
-                child: Text(
+                child: loading ? CircularProgressIndicator() : Text(
                   'Salvar',
                   style: new TextStyle(
                       fontSize: 20.0, fontFamily: "PoppinsRegular"),
@@ -149,6 +149,8 @@ class _SettingsState extends State<Settings> {
                                         onChanged: (bool newValue) {
                                           setState(() {
                                             adocao = newValue;
+                                            cruzamento = false;
+                                            desaparecidos = false;
                                           });
                                         },
                                         activeColor: gradientOne,
@@ -159,6 +161,8 @@ class _SettingsState extends State<Settings> {
                                         onChanged: (bool newValue) {
                                           setState(() {
                                             adocao = newValue;
+                                            cruzamento = false;
+                                            desaparecidos = false;
                                           });
                                         },
                                         activeColor: gradientOne,
@@ -173,6 +177,8 @@ class _SettingsState extends State<Settings> {
                                         onChanged: (bool newValue) {
                                           setState(() {
                                             desaparecidos = newValue;
+                                            adocao = false;
+                                            cruzamento = false;
                                           });
                                         },
                                         activeColor: gradientOne,
@@ -183,6 +189,8 @@ class _SettingsState extends State<Settings> {
                                         onChanged: (bool newValue) {
                                           setState(() {
                                             desaparecidos = newValue;
+                                            adocao = false;
+                                            cruzamento = false;
                                           });
                                         },
                                         activeColor: gradientOne,
@@ -197,6 +205,8 @@ class _SettingsState extends State<Settings> {
                                         onChanged: (bool newValue) {
                                           setState(() {
                                             cruzamento = newValue;
+                                            adocao = false;
+                                            desaparecidos = false;
                                           });
                                         },
                                         activeColor: gradientOne,
@@ -207,6 +217,8 @@ class _SettingsState extends State<Settings> {
                                         onChanged: (bool newValue) {
                                           setState(() {
                                             cruzamento = newValue;
+                                            adocao = false;
+                                            desaparecidos = false;
                                           });
                                         },
                                         activeColor: gradientOne,
@@ -465,7 +477,7 @@ class _SettingsState extends State<Settings> {
                           ),
                           new FlatButton(
                             onPressed: () {
-                              Navigator.of(context).popAndPushNamed("/splash");
+                              _deleteAccountConfirmation();
                             },
                             child: new Container(
                                 width: 250.0,
@@ -514,7 +526,54 @@ class _SettingsState extends State<Settings> {
         .pushNamedAndRemoveUntil("/login", ModalRoute.withName('/login'));
   }
 
+  _deleteAccountConfirmation() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: new Text("Deletar Conta?"),
+          content: new Text(
+              "Esta ação não poderá ser desfeita."),
+          actions: <Widget>[
+            // define os botões na base do dialogo
+            new FlatButton(
+              child: new Text("Fechar"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            new FlatButton(
+              child: new Text("Excluir"),
+              onPressed: () async {
+                await _deleteAccount();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  _deleteAccount() async {
+    final url =
+        'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/profile';
+    final storage = new FlutterSecureStorage();
+    final token = await storage.read(key: 'token');
+
+    final response = await http
+        .delete(url, headers: {'x-access-token': token});
+
+    final data = jsonDecode(response.body);
+
+    if (data['success']) {
+      _logout();
+    }
+  }
+
   _saveSettings() async {
+    setState(() {
+      loading = true;
+    });
     final categories = [];
 
     if (cachorro) {
@@ -577,7 +636,25 @@ class _SettingsState extends State<Settings> {
           color: Colors.white,
         ),
       ).show(context);
+
+      Navigator.of(context).pushNamed("/home");
+    } else {
+      Flushbar(
+        message: 'Erro ao salvar as informações.',
+        duration: Duration(seconds: 5),
+        leftBarIndicatorColor: Colors.red.shade300,
+        backgroundColor: Colors.red.shade300,
+        icon: Icon(
+          Icons.error_outline,
+          size: 28,
+          color: Colors.white,
+        ),
+      ).show(context);
     }
+
+    setState(() {
+      loading = false;
+    });
   }
 
   _getSettings() async {
@@ -589,8 +666,12 @@ class _SettingsState extends State<Settings> {
     final data = jsonDecode(response.body);
 
     if (data['settings'] != null) {
-      List categories = data['settings']['categories'];
-      List searchBy = data['settings']['search_by'];
+      List categories = data['settings']['categories'].runtimeType == String
+        ? jsonDecode(data['settings']['categories'])
+        : data['settings']['categories'];
+      List searchBy = data['settings']['search_by'].runtimeType == String
+        ? jsonDecode(data['settings']['search_by'])
+        : data['settings']['search_by'];
 
       discoverablity = data['settings']['active'] == 1;
       cruzamento = searchBy.contains('Cruzamento');

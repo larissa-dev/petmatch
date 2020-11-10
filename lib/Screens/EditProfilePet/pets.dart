@@ -43,7 +43,7 @@ class _PetsPageState extends State<PetsPage> {
         centerTitle: false,
         leading: new FlatButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed("/home");
             },
             child:
                 new Image(image: new ExactAssetImage("assets/back-arrow.png"))),

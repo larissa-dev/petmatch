@@ -53,6 +53,8 @@ class _EditPetState extends State<EditPet> {
 
   bool roedores = false;
 
+  bool loading = false;
+
   @override
   void initState() {
     if (widget.pet['type'] == 'Gato') {
@@ -130,6 +132,9 @@ class _EditPetState extends State<EditPet> {
   }
 
   setPet() async {
+    setState(() {
+      loading = true;
+    });
     Flushbar(
       message: 'Estamos processando suas informações, aguarde.',
       duration: Duration(seconds: 5),
@@ -198,7 +203,6 @@ class _EditPetState extends State<EditPet> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      print(data['success']);
 
       if (data['success']) {
         Flushbar(
@@ -218,8 +222,16 @@ class _EditPetState extends State<EditPet> {
           MaterialPageRoute(builder: (context) => PetsPage()),
         );
 
+        setState(() {
+          loading = true;
+        });
+
         return;
       }
+
+      setState(() {
+        loading = true;
+      });
     }
 
     Flushbar(
@@ -246,7 +258,7 @@ class _EditPetState extends State<EditPet> {
           brightness: Brightness.light,
           backgroundColor: Colors.white,
           title: new Text(
-            "Editar Perfil",
+            "Editar Pet",
             style: new TextStyle(
               color: new Color.fromRGBO(92, 107, 122, 1.0),
               fontSize: 25.0,
@@ -257,7 +269,7 @@ class _EditPetState extends State<EditPet> {
           centerTitle: false,
           leading: new FlatButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pushNamed("/pets");
               },
               child: new Image(
                   image: new ExactAssetImage("assets/back-arrow.png"))),
@@ -267,7 +279,7 @@ class _EditPetState extends State<EditPet> {
                 onPressed: () {
                   setPet();
                 },
-                child: Text(
+                child: loading ? CircularProgressIndicator() : Text(
                   'Salvar',
                   style: new TextStyle(
                       fontSize: 20.0, fontFamily: "PoppinsRegular"),
@@ -367,7 +379,7 @@ class _EditPetState extends State<EditPet> {
                       new Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: new Text(
-                          "Tipo",
+                          "Espécie",
                           style: new TextStyle(
                               fontSize: 20.0, fontFamily: "PoppinsRegular"),
                         ),
@@ -555,7 +567,7 @@ class _EditPetState extends State<EditPet> {
                       new Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: new Text(
-                          "Espécie",
+                          "Raça",
                           style: new TextStyle(
                               fontSize: 20.0, fontFamily: "PoppinsRegular"),
                         ),
@@ -566,7 +578,7 @@ class _EditPetState extends State<EditPet> {
                           controller: species,
                           maxLines: 1,
                           decoration: new InputDecoration(
-                            hintText: "Informe a espécie:",
+                            hintText: "Informe a raça:",
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.all(15.0),
                           ),
@@ -709,16 +721,17 @@ class _EditPetState extends State<EditPet> {
                           height: 50.0,
                           alignment: Alignment.center,
                           decoration: new BoxDecoration(
+                              color: gender == 'M' ? gradientThree : Colors.transparent,
                               border: new Border.all(
                                   width: 2.0, color: gradientThree),
                               borderRadius: new BorderRadius.all(
                                   new Radius.circular(50.0))),
                           child: new Text(
-                            "Masculino",
+                            "Macho",
                             style: new TextStyle(
                                 fontSize: 18.0,
                                 letterSpacing: 0.6,
-                                color: gradientThree,
+                                color: gender == 'M' ? Colors.white : gradientThree,
                                 fontWeight: FontWeight.w400),
                           ),
                         ),
@@ -734,17 +747,17 @@ class _EditPetState extends State<EditPet> {
                           height: 50.0,
                           alignment: Alignment.center,
                           decoration: new BoxDecoration(
-                              color: gradientOne,
+                              color: gender == 'F' ? gradientOne : Colors.transparent,
                               border: new Border.all(
                                   width: 2.0, color: gradientOne),
                               borderRadius: new BorderRadius.all(
                                   new Radius.circular(50.0))),
                           child: new Text(
-                            "Feminino",
+                            "Fêmea",
                             style: new TextStyle(
                                 fontSize: 18.0,
                                 letterSpacing: 0.6,
-                                color: Colors.white,
+                                color: gender == 'F' ? Colors.white : gradientOne,
                                 fontWeight: FontWeight.w400),
                           ),
                         ),

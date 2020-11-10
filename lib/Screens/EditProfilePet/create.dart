@@ -49,10 +49,11 @@ class _CreatePetState extends State<CreatePet> {
 
   bool roedores = false;
 
+  bool loading = false;
+
   getImage() async {
     try {
       var image = await ImagePicker.pickImage(source: ImageSource.gallery);
-      print(image);
 
       if (image != null) {
         setState(() {
@@ -86,6 +87,9 @@ class _CreatePetState extends State<CreatePet> {
   }
 
   setPet() async {
+    setState(() {
+      loading = true;
+    });
     Flushbar(
       message: 'Estamos processando suas informações, aguarde.',
       duration: Duration(seconds: 5),
@@ -154,7 +158,6 @@ class _CreatePetState extends State<CreatePet> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      print(data['success']);
 
       if (data['success']) {
         Flushbar(
@@ -174,8 +177,16 @@ class _CreatePetState extends State<CreatePet> {
           MaterialPageRoute(builder: (context) => PetsPage()),
         );
 
+        setState(() {
+          loading = false;
+        });
+
         return;
       }
+
+      setState(() {
+        loading = false;
+      });
     }
 
     Flushbar(
@@ -202,7 +213,7 @@ class _CreatePetState extends State<CreatePet> {
           brightness: Brightness.light,
           backgroundColor: Colors.white,
           title: new Text(
-            "Editar Perfil",
+            "Criar Pet",
             style: new TextStyle(
               color: new Color.fromRGBO(92, 107, 122, 1.0),
               fontSize: 25.0,
@@ -213,7 +224,7 @@ class _CreatePetState extends State<CreatePet> {
           centerTitle: false,
           leading: new FlatButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pushNamed("/pets");
               },
               child: new Image(
                   image: new ExactAssetImage("assets/back-arrow.png"))),
@@ -223,7 +234,7 @@ class _CreatePetState extends State<CreatePet> {
                 onPressed: () {
                   setPet();
                 },
-                child: Text(
+                child: loading ? CircularProgressIndicator() : Text(
                   'Salvar',
                   style: new TextStyle(
                       fontSize: 20.0, fontFamily: "PoppinsRegular"),
@@ -323,7 +334,7 @@ class _CreatePetState extends State<CreatePet> {
                       new Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: new Text(
-                          "Tipo",
+                          "Espécie",
                           style: new TextStyle(
                               fontSize: 20.0, fontFamily: "PoppinsRegular"),
                         ),
@@ -511,7 +522,7 @@ class _CreatePetState extends State<CreatePet> {
                       new Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: new Text(
-                          "Espécie",
+                          "Raça",
                           style: new TextStyle(
                               fontSize: 20.0, fontFamily: "PoppinsRegular"),
                         ),
@@ -522,7 +533,7 @@ class _CreatePetState extends State<CreatePet> {
                           controller: species,
                           maxLines: 1,
                           decoration: new InputDecoration(
-                            hintText: "Informe a espécie:",
+                            hintText: "Informe a raça:",
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.all(15.0),
                           ),
@@ -660,56 +671,57 @@ class _CreatePetState extends State<CreatePet> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       new GestureDetector(
-                        child: new Container(
-                          width: 150.0,
-                          height: 50.0,
-                          alignment: Alignment.center,
-                          decoration: new BoxDecoration(
-                              border: new Border.all(
-                                  width: 2.0, color: gradientThree),
-                              borderRadius: new BorderRadius.all(
-                                  new Radius.circular(50.0))),
-                          child: new Text(
-                            "Masculino",
-                            style: new TextStyle(
-                                fontSize: 18.0,
-                                letterSpacing: 0.6,
-                                color: gradientThree,
-                                fontWeight: FontWeight.w400),
+                            child: new Container(
+                              width: 150.0,
+                              height: 50.0,
+                              alignment: Alignment.center,
+                              decoration: new BoxDecoration(
+                                  color: gender == 'M' ? gradientThree : Colors.transparent,
+                                  border: new Border.all(
+                                      width: 2.0, color: gradientThree),
+                                  borderRadius: new BorderRadius.all(
+                                      new Radius.circular(50.0))),
+                              child: new Text(
+                                "Macho",
+                                style: new TextStyle(
+                                    fontSize: 18.0,
+                                    letterSpacing: 0.6,
+                                    color: gender == 'M' ? Colors.white : gradientThree,
+                                    fontWeight: FontWeight.w400),
+                              ),
+                            ),
+                            onTap: () {
+                              setState(() {
+                                gender = 'M';
+                              });
+                            },
                           ),
-                        ),
-                        onTap: () {
-                          setState(() {
-                            gender = 'M';
-                          });
-                        },
-                      ),
-                      new GestureDetector(
-                        child: Container(
-                          width: 150.0,
-                          height: 50.0,
-                          alignment: Alignment.center,
-                          decoration: new BoxDecoration(
-                              color: gradientOne,
-                              border: new Border.all(
-                                  width: 2.0, color: gradientOne),
-                              borderRadius: new BorderRadius.all(
-                                  new Radius.circular(50.0))),
-                          child: new Text(
-                            "Feminino",
-                            style: new TextStyle(
-                                fontSize: 18.0,
-                                letterSpacing: 0.6,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w400),
-                          ),
-                        ),
-                        onTap: () {
-                          setState(() {
-                            gender = 'F';
-                          });
-                        },
-                      )
+                          new GestureDetector(
+                            child: Container(
+                              width: 150.0,
+                              height: 50.0,
+                              alignment: Alignment.center,
+                              decoration: new BoxDecoration(
+                                  color: gender == 'F' ? gradientOne : Colors.transparent,
+                                  border: new Border.all(
+                                      width: 2.0, color: gradientOne),
+                                  borderRadius: new BorderRadius.all(
+                                      new Radius.circular(50.0))),
+                              child: new Text(
+                                "Fêmea",
+                                style: new TextStyle(
+                                    fontSize: 18.0,
+                                    letterSpacing: 0.6,
+                                    color: gender == 'F' ? Colors.white : gradientOne,
+                                    fontWeight: FontWeight.w400),
+                              ),
+                            ),
+                            onTap: () {
+                              setState(() {
+                                gender = 'F';
+                              });
+                            },
+                          )
                     ],
                   ),
                 )

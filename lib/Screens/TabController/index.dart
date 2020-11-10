@@ -19,7 +19,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     controller.addListener(() {
       this.setState(() {
         index = controller.index;
-        // print(index);
       });
     });
   }

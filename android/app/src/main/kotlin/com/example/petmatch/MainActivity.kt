@@ -1,4 +1,4 @@
-package com.example.petmatch
+package com.petmatch
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity
