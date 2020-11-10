@@ -32,6 +32,8 @@ class _EditProfileState extends State<EditProfile> {
 
   Future apiData;
 
+  bool loading = false;
+
   void initState() {
     apiData = getProfile();
 
@@ -96,6 +98,10 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   setProfile() async {
+    setState(() {
+      loading = true;
+    });
+
     Flushbar(
       message: 'Estamos processando suas informações, aguarde.',
       duration: Duration(seconds: 5),
@@ -148,7 +154,33 @@ class _EditProfileState extends State<EditProfile> {
           color: Colors.white,
         ),
       ).show(context);
+
+      setState(() {
+        loading = false;
+      });
+
+      Navigator.of(context).pushNamed("/home");
+
+      return;
     }
+
+    Flushbar(
+      message: 'Houve um erro ao salvar suas informações.',
+      duration: Duration(seconds: 5),
+      leftBarIndicatorColor: Colors.red.shade300,
+      backgroundColor: Colors.red.shade300,
+      icon: Icon(
+        Icons.error_outline,
+        size: 28,
+        color: Colors.white,
+      ),
+    ).show(context);
+
+    setState(() {
+      loading = false;
+    });
+
+    return;
   }
 
   @override
@@ -183,7 +215,7 @@ class _EditProfileState extends State<EditProfile> {
               onPressed: () {
                 setProfile();
               },
-              child: Text(
+              child: loading ? CircularProgressIndicator() : Text(
                 'Salvar',
                 style:
                     new TextStyle(fontSize: 20.0, fontFamily: "PoppinsRegular"),
