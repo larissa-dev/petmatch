@@ -146,7 +146,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   elevation: 12,
                   color: Colors.white,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10)
+                  ),
                   child: Container(
                     width: screenSize.width * 0.9,
                     height: 500,

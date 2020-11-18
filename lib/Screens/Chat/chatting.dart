@@ -43,7 +43,7 @@ class _ChattingScreenState extends State<ChattingScreen>
   int _limitIncrement = 20;
 
   final themeColor = Color(0xfff5a623);
-  final primaryColor = Color(0xff203152);
+  final primaryColor = Color.fromRGBO(208, 107, 176, 1.0);
   final greyColor = Color(0xffaeaeae);
   final greyColor2 = Color(0xffE8E8E8);
 
@@ -167,6 +167,7 @@ class _ChattingScreenState extends State<ChattingScreen>
                 decoration: InputDecoration.collapsed(
                   hintText: 'Type your message...',
                   hintStyle: TextStyle(color: greyColor),
+
                 ),
                 focusNode: focusNode,
               ),
@@ -274,6 +275,7 @@ class _ChattingScreenState extends State<ChattingScreen>
       );
     } else {
       return Container(
+        margin: EdgeInsets.only(bottom: 10.0),
         child: Column(
           children: <Widget>[
             Row(
@@ -312,7 +314,7 @@ class _ChattingScreenState extends State<ChattingScreen>
                   decoration: BoxDecoration(
                       color: primaryColor,
                       borderRadius: BorderRadius.circular(8.0)),
-                  margin: EdgeInsets.only(left: 10.0),
+                  margin: EdgeInsets.only(left: 10.0,),
                 )
               ]
             )
