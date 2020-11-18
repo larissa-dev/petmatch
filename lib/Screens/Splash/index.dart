@@ -46,6 +46,8 @@ class SplashScreenState extends State<SplashScreen> {
     final storage = new FlutterSecureStorage();
     final token = await storage.read(key: 'token');
 
+    print(token == null);
+
     if (token == null) {
       return false;
     }

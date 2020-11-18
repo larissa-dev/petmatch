@@ -138,7 +138,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   }
 
                   if (drag.offset.direction < 1 && drag.offset.dx > 100.0) {
-                    _match();
+                    _match(pet['id']);
                   }
                 },
                 childWhenDragging: Container(),
@@ -176,7 +176,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               new SwipeButton(
                                 text: "SIM",
                                 onClick: () {
-                                  _match();
+                                  _match(pet['id']);
                                 },
                               ),
                             ],
@@ -215,7 +215,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               width: screenSize.width * 0.9,
                               child: Image.network(
                                 pet['photo'],
-                                fit: BoxFit.cover,
+                                fit: BoxFit.fitHeight,
                               ),
                             ),
                           ),
@@ -235,7 +235,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 new SwipeButton(
                                   text: "SIM",
                                   onClick: () {
-                                    _match();
+                                    _match(pet['id']);
                                   },
                                 ),
                               ],
@@ -266,18 +266,39 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return [];
   }
 
-  _match() {
-    Flushbar(
-      message: 'MATCH!!!',
-      duration: Duration(seconds: 5),
-      leftBarIndicatorColor: Colors.green.shade300,
-      backgroundColor: Colors.green.shade300,
-      icon: Icon(
-        Icons.error_outline,
-        size: 28,
-        color: Colors.white,
-      ),
-    ).show(context);
+  _match(int id) async {
+    final storage = new FlutterSecureStorage();
+    final token = await storage.read(key: 'token');
+    final String url =
+        'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/match';
+    final Map requestBody = {
+      'petId': id.toString()
+    };
+
+    final response = await http
+        .post(url, body: requestBody, headers: {'x-access-token': token});
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      if (data['success'] && data['match']) {
+        Flushbar(
+          message: 'MATCH!!!',
+          duration: Duration(seconds: 5),
+          leftBarIndicatorColor: Colors.green.shade300,
+          backgroundColor: Colors.green.shade300,
+          icon: Icon(
+            Icons.error_outline,
+            size: 28,
+            color: Colors.white,
+          ),
+        ).show(context);
+
+        Future.delayed(const Duration(milliseconds: 500), () {
+          Navigator.of(context).pushNamed("/chatList");
+        });
+      }
+    }
 
     _removeCard();
   }

@@ -98,7 +98,6 @@ class _EditPetState extends State<EditPet> {
   getImage() async {
     try {
       var image = await ImagePicker.pickImage(source: ImageSource.gallery);
-      print(image);
 
       if (image != null) {
         setState(() {

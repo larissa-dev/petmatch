@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:petmatch/theme/styles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -518,9 +520,14 @@ class _SettingsState extends State<Settings> {
 
   _logout() async {
     final storage = new FlutterSecureStorage();
+    final GoogleSignIn googleSignIn = GoogleSignIn();
 
     await storage.delete(key: 'currentUser');
     await storage.delete(key: 'token');
+
+    await FirebaseAuth.instance.signOut();
+    await googleSignIn.disconnect();
+    await googleSignIn.signOut();
 
     Navigator.of(context)
         .pushNamedAndRemoveUntil("/login", ModalRoute.withName('/login'));
@@ -577,19 +584,19 @@ class _SettingsState extends State<Settings> {
     final categories = [];
 
     if (cachorro) {
-      categories.add('cachorro');
+      categories.add('Cachorro');
     }
 
     if (gato) {
-      categories.add('gato');
+      categories.add('Gato');
     }
 
     if (roedores) {
-      categories.add('roedores');
+      categories.add('Roedor');
     }
 
     if (passaros) {
-      categories.add('passaros');
+      categories.add('Passaro');
     }
 
     List searchBy = [];
@@ -678,10 +685,10 @@ class _SettingsState extends State<Settings> {
       adocao = searchBy.contains('Adoção');
       desaparecidos = searchBy.contains('Desaparecido');
       distance = double.parse(data['settings']['distance'].toString());
-      cachorro = categories.contains('cachorro');
-      gato = categories.contains('gato');
-      roedores = categories.contains('roedores');
-      passaros = categories.contains('passaros');
+      cachorro = categories.contains('Cachorro');
+      gato = categories.contains('Gato');
+      roedores = categories.contains('Roedor');
+      passaros = categories.contains('Passaro');
       matches = data['settings']['notifications_matches'] == 1;
       messages = data['settings']['notifications_messages'] == 1;
     }

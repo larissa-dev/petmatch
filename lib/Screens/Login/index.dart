@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -48,10 +49,22 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     final User firebaseUser =
         (await auth.signInWithCredential(credential)).user;
 
+    if (firebaseUser != null) {
+        // Check is already sign up
+      final QuerySnapshot result =
+          await FirebaseFirestore.instance.collection('users').where('id', isEqualTo: firebaseUser.uid).get();
+      final List < DocumentSnapshot > documents = result.docs;
+      if (documents.length == 0) {
+        // Update data to server if new user
+        FirebaseFirestore.instance.collection('users').doc(firebaseUser.uid).set(
+            { 'nickname': firebaseUser.displayName, 'photoUrl': firebaseUser.photoURL, 'id': firebaseUser.uid });
+      }
+    }
+
     final storage = new FlutterSecureStorage();
 
     Map currentUser = {
-      'id': googleUser.id,
+      'googleId': firebaseUser.uid,
       'displayName': googleUser.displayName,
       'email': googleUser.email,
       'photoUrl': googleUser.photoUrl,
