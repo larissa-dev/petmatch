@@ -82,7 +82,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         color: Colors.white,
       ),
       body: new TabBarView(
-        children: <Widget>[new HomePage(), new Chat(), new Profile()],
+        children: <Widget>[new HomePage(tabController: controller), new Chat(), new Profile()],
         controller: controller,
       ),
     );

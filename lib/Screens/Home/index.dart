@@ -9,6 +9,10 @@ import 'package:petmatch/Components/swipeButton.dart';
 import 'package:petmatch/Screens/Home/detail.dart';
 
 class HomePage extends StatefulWidget {
+  final TabController tabController;
+
+  const HomePage({Key key, this.tabController}) : super(key: key);
+  
   @override
   _HomePageState createState() => new _HomePageState();
 }
@@ -17,6 +21,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   List<Widget> cardList = [];
   Future apiData;
   Size screenSize;
+  TabController _tabController;
 
   void initState() {
     Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
@@ -36,6 +41,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
 
     apiData = _search();
+
+    _tabController = new TabController(vsync: this, length: 3);
 
     super.initState();
   }
@@ -107,9 +114,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
+  void _denyPet(String petId) async {
+    print(petId);
+    final storage = new FlutterSecureStorage();
+    final token = await storage.read(key: 'token');
+    final String url =
+        'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/pets/deny';
+    
+    await http.post(url, body: { 'petId': petId }, headers: {'x-access-token': token});
+
+    _removeCard();
+  }
+
   Future<List> _search() async {
     final storage = new FlutterSecureStorage();
     final token = await storage.read(key: 'token');
+    print(token);
     final String url =
         'https://us-central1-petmatch-firebase-api.cloudfunctions.net/api/pets/search';
     final response = await http.get(url, headers: {'x-access-token': token});
@@ -134,7 +154,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: Draggable(
                 onDragEnd: (DraggableDetails drag) {
                   if (drag.offset.direction > 1 && drag.offset.dx < -100.0) {
-                    _removeCard();
+                    _denyPet('${pet['id']}');
                   }
 
                   if (drag.offset.direction < 1 && drag.offset.dx > 100.0) {
@@ -156,9 +176,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       children: [
                         Container(
                           width: screenSize.width * 0.9,
-                          child: Image.network(
-                            pet['photo'],
-                            fit: BoxFit.cover,
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: NetworkImage(pet['photo']),
+                              fit: BoxFit.cover
+                            )
                           ),
                         ),
                         Container(
@@ -171,7 +193,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               new SwipeButton(
                                 text: "NÃO",
                                 onClick: () {
-                                  _removeCard();
+                                  _denyPet('${pet['id']}');
                                 },
                               ),
                               new SwipeButton(
@@ -205,18 +227,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => DetailPage(
-                                          pet: pet,
-                                          yes: _match,
-                                          no: _removeCard,
-                                        )),
+                                  builder: (context) => DetailPage(
+                                    pet: pet,
+                                    yes: _match,
+                                    no: _removeCard,
+                                  )
+                                ),
                               );
                             },
                             child: Container(
                               width: screenSize.width * 0.9,
-                              child: Image.network(
-                                pet['photo'],
-                                fit: BoxFit.fitHeight,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(pet['photo']),
+                                  fit: BoxFit.cover
+                                )
                               ),
                             ),
                           ),
@@ -230,7 +255,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 new SwipeButton(
                                   text: "NÃO",
                                   onClick: () {
-                                    _removeCard();
+                                    _denyPet('${pet['id']}');
                                   },
                                 ),
                                 new SwipeButton(
@@ -295,9 +320,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ).show(context);
 
-        Future.delayed(const Duration(milliseconds: 500), () {
-          Navigator.of(context).pushNamed("/chatList");
-        });
+        widget.tabController.animateTo(1, duration: Duration(seconds: 1));
       }
     }
 
